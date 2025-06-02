@@ -17,6 +17,8 @@
 
 package co.com.leronarenwino;
 
+import co.com.leronarenwino.editor.TemplateEditor;
+
 import javax.swing.*;
 
 public class Main {
@@ -31,14 +33,12 @@ public class Main {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException |
-                 IllegalAccessException ignored) {
-
+                 IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(TemplateEditor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
 
         // Create and display the form
-        java.awt.EventQueue.invokeLater(() -> {
-
-        });
+        java.awt.EventQueue.invokeLater(() -> new TemplateEditor().setVisible(true));
 
     }
 }
