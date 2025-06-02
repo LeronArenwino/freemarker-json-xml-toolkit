@@ -31,7 +31,7 @@ public class Main {
                 }
             }
         } catch (ClassNotFoundException | InstantiationException | UnsupportedLookAndFeelException |
-                 IllegalAccessException _) {
+                 IllegalAccessException ignored) {
 
         }
 

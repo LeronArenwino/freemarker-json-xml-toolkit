@@ -1,1 +1,16 @@
+pluginManagement {
+    repositories {
+        gradlePluginPortal()
+    }
+}
+
 rootProject.name = 'freemarker-tool'
+
+include 'app-service'
+project(':app-service').projectDir = file("application/app-service")
+include 'model'
+project(':model').projectDir = file("domain/model")
+include 'usecase'
+project(':usecase').projectDir = file("domain/usecase")
+include 'gui'
+project(':gui').projectDir = file("infrastructure/entry-points/gui")

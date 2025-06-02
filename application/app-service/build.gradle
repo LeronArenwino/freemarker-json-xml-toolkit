@@ -1,0 +1,12 @@
+plugins {
+    id 'application'
+}
+
+application {
+    mainClass = 'co.com.leronarenwino.Main'
+}
+
+dependencies {
+    implementation 'org.freemarker:freemarker:2.3.34'
+    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
+}
