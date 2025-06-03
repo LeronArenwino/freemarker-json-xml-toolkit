@@ -119,7 +119,7 @@ public class TemplateValidator {
             }
 
             // Combine formatted assignments and pretty JSON, no extra newlines
-            return prettyAssigns.toString() + prettyJson;
+            return prettyAssigns + prettyJson;
         }
         return unescaped;
     }
