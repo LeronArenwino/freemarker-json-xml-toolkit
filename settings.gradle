@@ -14,3 +14,5 @@ include 'usecase'
 project(':usecase').projectDir = file("domain/usecase")
 include 'gui'
 project(':gui').projectDir = file("infrastructure/entry-points/gui")
+include 'freemarker-adapter'
+project(':freemarker-adapter').projectDir = file("infrastructure/driven-adapters/freemarker-adapter")

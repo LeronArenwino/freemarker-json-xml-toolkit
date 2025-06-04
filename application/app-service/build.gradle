@@ -8,7 +8,4 @@ application {
 
 dependencies {
     implementation project(':gui')
-
-    implementation 'org.freemarker:freemarker:2.3.34'
-    implementation 'com.fasterxml.jackson.core:jackson-databind:2.19.0'
 }

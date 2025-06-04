@@ -17,13 +17,9 @@
 
 package co.com.leronarenwino;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -37,12 +33,7 @@ public class TemplateValidator {
     }
 
     public static String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception {
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-        cfg.setDefaultEncoding("UTF-8");
-        Template template = new Template("template", new StringReader(templateContent), cfg);
-        StringWriter writer = new StringWriter();
-        template.process(dataModel, writer);
-        return writer.toString();
+        return FreemarkerProcessor.processTemplate(templateContent, dataModel);
     }
 
     public static boolean validateJson(String jsonOutput) {
