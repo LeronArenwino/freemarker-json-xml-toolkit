@@ -37,24 +37,19 @@ public class TemplateValidator {
         REQUIRED_FIELDS.add("anotherHeader");
     }
 
-    public static boolean validateTemplate(String templateContent, Map<String, Object> dataModel) {
+    public static String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception {
+        Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
+        cfg.setDefaultEncoding("UTF-8");
+        Template template = new Template("template", new StringReader(templateContent), cfg);
+        StringWriter writer = new StringWriter();
+        template.process(dataModel, writer);
+        return writer.toString();
+    }
+
+    public static boolean validateJson(String jsonOutput) {
         try {
-            // Configure FreeMarker
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-            cfg.setDefaultEncoding("UTF-8");
-
-            // Load template from string
-            Template template = new Template("template", new StringReader(templateContent), cfg);
-
-            // Generate JSON output
-            StringWriter writer = new StringWriter();
-            template.process(dataModel, writer);
-            String jsonOutput = writer.toString();
-
-            // Validate JSON structure
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(jsonOutput);
-
             for (String field : REQUIRED_FIELDS) {
                 if (!jsonNode.has(field)) {
                     System.out.println("Missing required field: " + field);
@@ -63,7 +58,7 @@ public class TemplateValidator {
             }
             return true;
         } catch (Exception e) {
-            System.err.println("Error processing template: " + e.getMessage());
+            System.err.println("Invalid JSON: " + e.getMessage());
             return false;
         }
     }
@@ -124,6 +119,11 @@ public class TemplateValidator {
         return unescaped;
     }
 
+    public static Map<String, Object> parseJsonToDataModel(String json) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
+    }
+
     public static void testing(String[] args) {
 
         // Example FreeMarker template content
@@ -137,7 +137,7 @@ public class TemplateValidator {
         dataModel.put("headers", headers);
 
         // Validate template
-        boolean isValid = validateTemplate(templateContent, dataModel);
+        boolean isValid = validateJson(templateContent);
     }
 
 }

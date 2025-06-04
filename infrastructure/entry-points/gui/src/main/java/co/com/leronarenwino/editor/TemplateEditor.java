@@ -50,18 +50,28 @@ public class TemplateEditor extends JFrame {
     private JMenuItem settingsJMenuItem;
 
     // Components for the editor
-    private JLabel titleTemplateValidatorLabel;
+    private JLabel titleTemplateToolLabel;
     private JTextArea templateInputTextArea;
     private JScrollPane templateInputScrollPane;
+    private JButton processTemplateButton;
+
+    // Components for data input
+    private JTextArea dataInputTextArea;
+    private JScrollPane dataInputScrollPane;
     private JButton templateInputValidateButton;
 
     // Components for formatted output
     private JTextArea formattedTextArea;
+    private JScrollPane formattedTextAreaScrollPane;
     private JButton formatButton;
 
     // Components for output
     private JTextArea outputJsonTextArea;
+    private JScrollPane outputJsonScrollPane;
     private JButton runTemplateButton;
+
+    private JPanel southButtonPanel;
+
 
     public TemplateEditor() {
 
@@ -82,7 +92,7 @@ public class TemplateEditor extends JFrame {
         setTitle("Template Tool");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setSize(800, 600);
+        setSize(1280, 720);
         setLocationRelativeTo(null);
 
         // Menu components
@@ -109,32 +119,70 @@ public class TemplateEditor extends JFrame {
         westCenterPanel = new JPanel(new BorderLayout());
         centerCenterPanel = new JPanel(new BorderLayout());
 
-        // Initialize the left text field
-        titleTemplateValidatorLabel = new JLabel("Template validator", SwingConstants.CENTER);
-        titleTemplateValidatorLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        // Set layout and borders for main panels
+        northPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        centerCenterPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
 
-        templateInputTextArea = new JTextArea(15, 25);
+        // Initialize the left text field
+        titleTemplateToolLabel = new JLabel("Template (Apache FreeMarker 2.3.34)", SwingConstants.CENTER);
+        titleTemplateToolLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
+        titleTemplateToolLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
+
+        dataInputTextArea = new JTextArea(5, 75);
+        dataInputTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
+        dataInputTextArea.setLineWrap(false);
+        dataInputTextArea.setToolTipText("Enter your data model in JSON format here");
+
+        dataInputScrollPane = new JScrollPane(
+                dataInputTextArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+        dataInputScrollPane.setBorder(BorderFactory.createTitledBorder("Data"));
+
+        templateInputTextArea = new JTextArea(2,0);
         templateInputTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         templateInputTextArea.setLineWrap(false);
+        templateInputTextArea.setToolTipText("Enter your FreeMarker template here");
 
         templateInputScrollPane = new JScrollPane(
                 templateInputTextArea,
                 JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
                 JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
         );
+        templateInputScrollPane.setBorder(BorderFactory.createTitledBorder("Template"));
 
         templateInputValidateButton = new JButton("Validate Template");
+        templateInputValidateButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
+        templateInputValidateButton.setToolTipText("Validate the FreeMarker template against the data model");
 
         outputJsonTextArea = new JTextArea(15, 25);
         outputJsonTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         outputJsonTextArea.setEditable(false);
+        outputJsonTextArea.setLineWrap(false);
+
+        outputJsonScrollPane = new JScrollPane(
+                outputJsonTextArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
+
+        processTemplateButton = new JButton("Process Template");
         runTemplateButton = new JButton("Evaluate Template");
+        southButtonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
 
         formattedTextArea = new JTextArea(15, 25);
         formattedTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
         formattedTextArea.setEditable(false);
-        formattedTextArea.setLineWrap(true);
-        formattedTextArea.setWrapStyleWord(true);
+        formattedTextArea.setLineWrap(false);
+        formattedTextArea.setWrapStyleWord(false);
+
+        formattedTextAreaScrollPane = new JScrollPane(
+                formattedTextArea,
+                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
+                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
+        );
 
         formatButton = new JButton("Format Template");
 
@@ -142,6 +190,17 @@ public class TemplateEditor extends JFrame {
             String input = templateInputTextArea.getText();
             String formatted = TemplateValidator.formatFreemarkerTemplate(input);
             formattedTextArea.setText(formatted);
+        });
+
+        templateInputTextArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            private void updateRows() {
+                int lines = templateInputTextArea.getLineCount();
+                templateInputTextArea.setRows(Math.min(10, Math.max(2, lines)));
+                templateInputTextArea.revalidate();
+            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateRows(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateRows(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateRows(); }
         });
 
     }
@@ -171,42 +230,61 @@ public class TemplateEditor extends JFrame {
         centerPanel.add(westCenterPanel, BorderLayout.WEST);
         centerPanel.add(centerCenterPanel, BorderLayout.CENTER);
 
-        // Adding components to the main panels
-        northPanel.add(titleTemplateValidatorLabel, BorderLayout.NORTH);
+        // Adding components to the north panel
+        northPanel.add(titleTemplateToolLabel, BorderLayout.NORTH);
         northPanel.add(templateInputScrollPane, BorderLayout.CENTER);
-        northPanel.add(templateInputValidateButton, BorderLayout.SOUTH);
 
         // Adding components to the center panel
-        centerPanel.add(new JScrollPane(formattedTextArea), BorderLayout.CENTER);
-        centerPanel.add(formatButton, BorderLayout.SOUTH);
-        templateInputValidateButton.addActionListener(e -> validateTemplateFromInput());
+        centerCenterPanel.add(dataInputScrollPane, BorderLayout.WEST);
+        centerCenterPanel.add(formattedTextAreaScrollPane, BorderLayout.CENTER);
 
         // Adding components to the east panel
-        eastPanel.add(new JScrollPane(outputJsonTextArea), BorderLayout.CENTER);
-        eastPanel.add(runTemplateButton, BorderLayout.SOUTH);
+        southCenterPanel.add(outputJsonScrollPane, BorderLayout.SOUTH);
+
+        // Adding components to the south panel
+        southButtonPanel.add(processTemplateButton);
+        southButtonPanel.add(templateInputValidateButton);
+        southButtonPanel.add(runTemplateButton);
+        southButtonPanel.add(formatButton);
+        southPanel.add(southButtonPanel, BorderLayout.CENTER);
+
+        processTemplateButton.addActionListener(e -> processTemplateOutput());
         runTemplateButton.addActionListener(e -> generatePrettyJsonOutput());
+        templateInputValidateButton.addActionListener(e -> validateTemplateFromInput());
 
     }
 
-    private void validateTemplateFromInput() {
+    private void processTemplateOutput() {
         String templateContent = templateInputTextArea.getText();
+        try {
+            Map<String, Object> dataModel = getDataModelFromInput();
+            String output = TemplateValidator.processTemplate(templateContent, dataModel);
+            outputJsonTextArea.setText(output);
+        } catch (Exception ex) {
+            outputJsonTextArea.setText("Error processing template: " + ex.getMessage());
+        }
+    }
 
-        Map<String, Object> dataModel = buildDefaultDataModel();
-
-        boolean isValid = TemplateValidator.validateTemplate(templateContent, dataModel);
-
-        JOptionPane.showMessageDialog(this,
-                isValid ? "Template is valid!" : "Template is NOT valid.",
-                "Validation Result",
-                isValid ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+    private void validateTemplateFromInput() {
+        String output = outputJsonTextArea.getText();
+        try {
+            boolean isValid = TemplateValidator.validateJson(output);
+            JOptionPane.showMessageDialog(this,
+                    isValid ? "Template is valid!" : "Template is NOT valid.",
+                    "Validation Result",
+                    isValid ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this,
+                    "Invalid JSON in output: " + ex.getMessage(),
+                    "Error",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     private void generatePrettyJsonOutput() {
         String templateContent = templateInputTextArea.getText();
-
-        Map<String, Object> dataModel = buildDefaultDataModel();
-
         try {
+            Map<String, Object> dataModel = getDataModelFromInput();
             String prettyJson = TemplateValidator.generatePrettyJsonOutput(templateContent, dataModel);
             outputJsonTextArea.setText(prettyJson);
         } catch (Exception ex) {
@@ -214,11 +292,9 @@ public class TemplateEditor extends JFrame {
         }
     }
 
-    private Map<String, Object> buildDefaultDataModel() {
-        Map<String, Object> dataModel = new HashMap<>();
-        Map<String, String> headers = new HashMap<>();
-        headers.put("sessionId", "abc123");
-        dataModel.put("headers", headers);
-        return dataModel;
+    private Map<String, Object> getDataModelFromInput() throws Exception {
+        String json = dataInputTextArea.getText();
+        return TemplateValidator.parseJsonToDataModel(json);
     }
+
 }
