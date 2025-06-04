@@ -292,8 +292,8 @@ public class TemplateEditor extends JFrame {
     }
 
     private Map<String, Object> getDataModelFromInput() throws Exception {
-        String json = dataInputTextArea.getText();
-        return TemplateValidator.parseJsonToDataModel(json);
+        String json = dataInputTextArea.getText().trim();
+        return TemplateValidator.parseJsonToDataModel(json.isEmpty() ? "{}" : json);
     }
 
 }
