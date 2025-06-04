@@ -64,12 +64,7 @@ public class TemplateValidator {
     }
 
     public static String generateJsonOutput(String templateContent, Map<String, Object> dataModel) throws Exception {
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-        cfg.setDefaultEncoding("UTF-8");
-        Template template = new Template("template", new StringReader(templateContent), cfg);
-        StringWriter writer = new StringWriter();
-        template.process(dataModel, writer);
-        return writer.toString();
+        return processTemplate(templateContent, dataModel);
     }
 
     public static String generatePrettyJsonOutput(String templateContent, Map<String, Object> dataModel) throws Exception {
@@ -121,23 +116,8 @@ public class TemplateValidator {
 
     public static Map<String, Object> parseJsonToDataModel(String json) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<Map<String, Object>>() {});
-    }
-
-    public static void testing(String[] args) {
-
-        // Example FreeMarker template content
-        String templateContent = "<#assign headers = headers>{\"anotherHeader\": \"${headers!\"error\"?truncate(50, '')}\"}";
-
-        Map<String, Object> dataModel = new HashMap<>();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("notAnotherHeader", "abc123");
-
-        dataModel.put("headers", headers);
-
-        // Validate template
-        boolean isValid = validateJson(templateContent);
+        return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<>() {
+        });
     }
 
 }
