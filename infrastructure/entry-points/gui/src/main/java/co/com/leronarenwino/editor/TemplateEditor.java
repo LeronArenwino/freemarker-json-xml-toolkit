@@ -36,6 +36,7 @@ public class TemplateEditor extends JFrame {
     private JPanel rightPanel;
     private JPanel bottomPanel;
     private JPanel buttonPanel;
+    private JButton clearOutputButton;
 
     // Components for template input
     private JTextArea templateInputTextArea;
@@ -105,6 +106,8 @@ public class TemplateEditor extends JFrame {
         // Buttons
         processTemplateButton = new JButton("Evaluate Template");
         processTemplateButton.addActionListener(e -> processTemplateOutput());
+        clearOutputButton = new JButton("Clear Output");
+        clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
 
     }
 
@@ -193,6 +196,7 @@ public class TemplateEditor extends JFrame {
 
         // Button panel addition
         buttonPanel.add(processTemplateButton);
+        buttonPanel.add(clearOutputButton);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Add to main panel
