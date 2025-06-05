@@ -39,10 +39,10 @@ jobs:
         run: ./gradlew :app-service:clean :app-service:build
 
       # --- Pasos de depuración existentes (ahora más útiles) ---
-      - name: Debug: Listar contenido de app-service/build
+      - name: Debug Listar contenido de app-service/build
         run: ls -R app-service/build || echo "Directorio 'app-service/build' no existe o está vacío."
 
-      - name: Debug: Listar contenido de app-service
+      - name: Debug Listar contenido de app-service
         run: ls -R app-service || echo "Directorio 'app-service' no existe o está vacío."
       # --- Fin de los pasos de depuración ---
 
