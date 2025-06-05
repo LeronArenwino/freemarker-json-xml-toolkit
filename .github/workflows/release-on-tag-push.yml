@@ -3,7 +3,7 @@ name: Release JAR on tag push
 on:
   create:
     tags:
-      - 'v*.*.*'
+      - '*.*.*'
 
 jobs:
   build:
@@ -36,7 +36,12 @@ jobs:
       - name: Obtener nombre del proyecto raíz de Gradle
         id: get_root_project_name
         run: |
+          # Asegúrate de que settings.gradle contenga la línea 'rootProject.name = ...'
+          # La siguiente línea extrae ese valor.
           echo "root_project_name=$(grep 'rootProject.name' settings.gradle | cut -d '=' -f 2 | tr -d " '")" >> $GITHUB_OUTPUT
+
+      - name: Mostrar archivos generados
+        run: ls -R application/app-service/build/libs || echo "Directorio vacío o no existe"
 
       - name: Crear y Subir Release
         uses: softprops/action-gh-release@v2
@@ -46,4 +51,4 @@ jobs:
           body: "Release generado automáticamente para la versión ${{ steps.get_version.outputs.version }}"
           draft: false
           prerelease: false
-          files: application/app-service/build/libs/${{ rootProject.name }}-${{ steps.get_version.outputs.version }}.jar
+          files: application/app-service/build/libs/${{ steps.get_root_project_name.outputs.root_project_name }}-${{ steps.get_version.outputs.version }}.jar
