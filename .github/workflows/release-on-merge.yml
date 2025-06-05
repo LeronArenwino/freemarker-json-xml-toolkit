@@ -26,7 +26,7 @@ jobs:
         run: ls -R app-service/build/libs || echo "Directorio vacío o no existe"
 
       - name: Generar tag único
-        run: echo "TAG_NAME=v1.0.${{ github.run_number }}-${{ github.sha::7 }}" >> $GITHUB_ENV
+        run: echo "TAG_NAME=v1.0.${{ github.run_number }}-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Crear Release
         uses: softprops/action-gh-release@v2
