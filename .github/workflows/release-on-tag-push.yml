@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
+      pull-requests: write
 
     steps:
       - name: Checkout código
@@ -41,12 +42,42 @@ jobs:
       - name: Mostrar archivos generados (verificar el nombre)
         run: ls -R application/app-service/build/libs || echo "Directorio vacío o no existe"
 
+      - name: Generar notas del release desde los mensajes de commits
+        id: generate_release_notes
+        run: |
+          CURRENT_TAG=${{ github.ref_name }}
+          # Intenta encontrar el tag anterior. Si es el primer tag, usa el commit inicial del repo.
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 ${CURRENT_TAG}^ 2>/dev/null || echo "$(git rev-list --max-parents=0 HEAD | head -n 1)")
+
+          echo "Buscando commits entre ${PREVIOUS_TAG} y ${CURRENT_TAG}"
+
+          # Captura los mensajes de commit.
+          # '--no-merges' excluye commits de merge para un historial más limpio.
+          # '--pretty=format:'- %s'' formatea cada commit con un guion y el mensaje.
+          # Se excluye el mensaje del propio commit del tag actual.
+          RELEASE_NOTES=$(git log --no-merges --pretty=format:'- %s' "${PREVIOUS_TAG}..${CURRENT_TAG}" --invert-grep --grep="^${CURRENT_TAG}$" || true)
+
+          # Si no hay commits (ej., primer tag o solo el commit del tag), añade un mensaje por defecto.
+          if [ -z "$RELEASE_NOTES" ]; then
+            RELEASE_NOTES="- No hay cambios de commits detallados detectados desde el tag anterior."
+          fi
+
+          # Usa la sintaxis 'EOF' para generar una salida multi-línea.
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          echo "### Cambios en esta versión (${{ steps.get_version.outputs.version }}):" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "${RELEASE_NOTES}" >> $GITHUB_OUTPUT
+          echo "" >> $GITHUB_OUTPUT
+          echo "---" >> $GITHUB_OUTPUT
+          echo "Generado automáticamente por GitHub Actions." >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
       - name: Crear y Subir Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           name: Release ${{ steps.get_version.outputs.version }}
-          body: "Release generado automáticamente para la versión ${{ steps.get_version.outputs.version }}"
+          body: ${{ steps.generate_release_notes.outputs.notes }}
           draft: false
           prerelease: false
           files: application/app-service/build/libs/${{ steps.get_root_project_name.outputs.root_project_name }}-${{ steps.get_version.outputs.version }}.jar
