@@ -6,42 +6,38 @@ on:
       - main
 
 jobs:
-  build-and-release:
+  build:
     runs-on: ubuntu-latest
 
-    permissions:
-      contents: write
-
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Checkout código
+        uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Setup JDK
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Grant execute permission to Gradle wrapper
-        run: chmod +x ./gradlew
-
-      - name: Build project
+      - name: Build JAR
         run: ./gradlew :app-service:clean :app-service:build
 
-      - name: Set version tag name
-        id: vars
-        run: echo "TAG_NAME=v1.0.${{ github.run_number }}" >> $GITHUB_ENV
+      - name: Mostrar archivos generados
+        run: ls -R app-service/build/libs || echo "Directorio vacío o no existe"
 
-      - name: Create GitHub Release
+      - name: Generar tag único
+        run: echo "TAG_NAME=v1.0.${{ github.run_number }}-${{ github.sha::7 }}" >> $GITHUB_ENV
+
+      - name: Crear Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
           name: Release ${{ env.TAG_NAME }}
-          body: "Release generado automáticamente al hacer merge a main."
+          body: "Release generado automáticamente"
           draft: false
           prerelease: false
 
-      - name: Upload JAR to release
+      - name: Subir JAR
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
