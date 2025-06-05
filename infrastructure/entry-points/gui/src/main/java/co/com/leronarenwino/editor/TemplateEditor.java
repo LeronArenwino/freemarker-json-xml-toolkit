@@ -22,34 +22,22 @@ import co.com.leronarenwino.TemplateValidator;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
+import java.util.function.BiFunction;
 
 public class TemplateEditor extends JFrame {
 
     // Main container panel
-    private JPanel containerPanel;
+    private JPanel mainPanel;
 
-    // Main panels for layout
-    private JPanel westPanel;
-    private JPanel northPanel;
-    private JPanel eastPanel;
-    private JPanel southPanel;
-    private JPanel centerPanel;
+    // Panels for layout
+    private JPanel columnsPanel;
+    private JPanel leftPanel;
+    private JPanel optionsPanel;
+    private JPanel rightPanel;
+    private JPanel bottomPanel;
+    private JPanel buttonPanel;
 
-    // Center panels for layout
-    private JPanel westCenterPanel;
-    private JPanel northCenterPanel;
-    private JPanel eastCenterPanel;
-    private JPanel southCenterPanel;
-    private JPanel centerCenterPanel;
-
-    // Menu components
-    private JMenuBar containerJMenuBar;
-    private JMenu fileJMenu;
-    private JMenu editJMenu;
-    private JMenuItem settingsJMenuItem;
-
-    // Components for the editor
-    private JLabel titleTemplateToolLabel;
+    // Components for template input
     private JTextArea templateInputTextArea;
     private JScrollPane templateInputScrollPane;
     private JButton processTemplateButton;
@@ -57,200 +45,177 @@ public class TemplateEditor extends JFrame {
     // Components for data input
     private JTextArea dataInputTextArea;
     private JScrollPane dataInputScrollPane;
-    private JButton templateInputValidateButton;
 
-    // Components for formatted output
-    private JTextArea formattedTextArea;
-    private JScrollPane formattedTextAreaScrollPane;
-    private JButton formatButton;
+    // Components for expected fields
+    private JTextArea expectedFieldsTextArea;
+    private JScrollPane expectedFieldsScrollPane;
 
-    // Components for output
+    // Components for output/result area
     private JTextArea outputJsonTextArea;
     private JScrollPane outputJsonScrollPane;
-    private JButton runTemplateButton;
-
-    private JPanel southButtonPanel;
-
 
     public TemplateEditor() {
 
-        // Initialize the components
+        // Initialize components
         initComponents();
 
-        // Add the components to the frame
-        addComponents();
+        // Set components
+        setComponents();
 
-        // Make the window visible
-        setVisible(true);
+        // Add components
+        addComponents();
 
     }
 
     public void initComponents() {
 
+        // Main panels
+        mainPanel = new JPanel(new BorderLayout(10, 10));
+        columnsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+
+        // Left, right, and options panels
+        leftPanel = new JPanel();
+        rightPanel = new JPanel();
+        optionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        bottomPanel = new JPanel(new BorderLayout(5, 5));
+
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+
+        // Template input
+        templateInputTextArea = new JTextArea(10, 40);
+        templateInputScrollPane = new JScrollPane(templateInputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+
+        // Data input
+        dataInputTextArea = new JTextArea(6, 40);
+        dataInputScrollPane = new JScrollPane(dataInputTextArea);
+
+        // Right panel options
+        // (You can add more fields as needed)
+        // Example for validation area
+        expectedFieldsTextArea = new JTextArea(6, 30);
+        expectedFieldsScrollPane = new JScrollPane(expectedFieldsTextArea);
+
+        // Output/result area
+        outputJsonTextArea = new JTextArea(8, 80);
+        outputJsonTextArea.setEditable(false);
+        outputJsonTextArea.setLineWrap(true);
+        outputJsonTextArea.setWrapStyleWord(true);
+        outputJsonScrollPane = new JScrollPane(outputJsonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+
+        // Buttons
+        processTemplateButton = new JButton("Evaluate Template");
+        processTemplateButton.addActionListener(e -> processTemplateOutput());
+
+    }
+
+    public void setComponents() {
+
+        // Main setup
+        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Left and right panels setup
+        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+
+        // Template input text area setup
+        templateInputTextArea.setLineWrap(false);
+        templateInputTextArea.setWrapStyleWord(false);
+        templateInputScrollPane.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
+                        "Template"
+                )
+        );
+
+        // Data input text area setup
+        dataInputTextArea.setLineWrap(false);
+        dataInputTextArea.setWrapStyleWord(false);
+        dataInputScrollPane.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
+                        "Data Model"
+                )
+        );
+
+        // Expected fields text area setup
+        expectedFieldsTextArea.setLineWrap(true);
+        expectedFieldsTextArea.setWrapStyleWord(true);
+        expectedFieldsScrollPane.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
+                        "Expected fields"
+                )
+        );
+
+        outputJsonScrollPane.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
+                        "Rendered Result"
+                )
+        );
+
         // Set default configuration to JFrame
-        setTitle("Template Tool");
+        setTitle("Template Tool (Apache FreeMarker 2.3.34)");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1280, 720);
         setLocationRelativeTo(null);
-
-        // Menu components
-        containerJMenuBar = new JMenuBar();
-        fileJMenu = new JMenu("File");
-        editJMenu = new JMenu("Edit");
-        settingsJMenuItem = new JMenuItem("Settings");
-
-        // Container panel configuration
-        containerPanel = new JPanel(new BorderLayout());
-        containerPanel.setOpaque(true);
-
-        // Main panels
-        northPanel = new JPanel(new BorderLayout());
-        eastPanel = new JPanel(new BorderLayout());
-        southPanel = new JPanel(new BorderLayout());
-        westPanel = new JPanel(new BorderLayout());
-        centerPanel = new JPanel(new BorderLayout());
-
-        // Secondary panels
-        northCenterPanel = new JPanel(new BorderLayout());
-        eastCenterPanel = new JPanel(new BorderLayout());
-        southCenterPanel = new JPanel(new BorderLayout());
-        westCenterPanel = new JPanel(new BorderLayout());
-        centerCenterPanel = new JPanel(new BorderLayout());
-
-        // Set layout and borders for main panels
-        northPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        centerPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        centerCenterPanel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
-
-        // Initialize the left text field
-        titleTemplateToolLabel = new JLabel("Template (Apache FreeMarker 2.3.34)", SwingConstants.CENTER);
-        titleTemplateToolLabel.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 16));
-        titleTemplateToolLabel.setBorder(BorderFactory.createEmptyBorder(0, 0, 10, 0));
-
-        dataInputTextArea = new JTextArea(5, 75);
-        dataInputTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-        dataInputTextArea.setLineWrap(false);
-        dataInputTextArea.setToolTipText("Enter your data model in JSON format here");
-
-        dataInputScrollPane = new JScrollPane(
-                dataInputTextArea,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        );
-        dataInputScrollPane.setBorder(BorderFactory.createTitledBorder("Data"));
-
-        templateInputTextArea = new JTextArea(2,0);
-        templateInputTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-        templateInputTextArea.setLineWrap(false);
-        templateInputTextArea.setToolTipText("Enter your FreeMarker template here");
-
-        templateInputScrollPane = new JScrollPane(
-                templateInputTextArea,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        );
-        templateInputScrollPane.setBorder(BorderFactory.createTitledBorder("Template"));
-
-        templateInputValidateButton = new JButton("Validate Template");
-        templateInputValidateButton.setFont(new Font(Font.SANS_SERIF, Font.BOLD, 12));
-        templateInputValidateButton.setToolTipText("Validate the FreeMarker template against the data model");
-
-        outputJsonTextArea = new JTextArea(15, 25);
-        outputJsonTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-        outputJsonTextArea.setEditable(false);
-        outputJsonTextArea.setLineWrap(false);
-
-        outputJsonScrollPane = new JScrollPane(
-                outputJsonTextArea,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        );
-
-        processTemplateButton = new JButton("Process Template");
-        runTemplateButton = new JButton("Evaluate Template");
-        southButtonPanel = new JPanel(new FlowLayout(FlowLayout.TRAILING));
-
-        formattedTextArea = new JTextArea(15, 25);
-        formattedTextArea.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 14));
-        formattedTextArea.setEditable(false);
-        formattedTextArea.setLineWrap(false);
-        formattedTextArea.setWrapStyleWord(false);
-
-        formattedTextAreaScrollPane = new JScrollPane(
-                formattedTextArea,
-                JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED,
-                JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED
-        );
-
-        formatButton = new JButton("Format Template");
-
-        formatButton.addActionListener(e -> {
-            String input = templateInputTextArea.getText();
-            String formatted = TemplateValidator.formatFreemarkerTemplate(input);
-            formattedTextArea.setText(formatted);
-        });
-
-        templateInputTextArea.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            private void updateRows() {
-                int lines = templateInputTextArea.getLineCount();
-                templateInputTextArea.setRows(Math.min(10, Math.max(2, lines)));
-                templateInputTextArea.revalidate();
-            }
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateRows(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateRows(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateRows(); }
-        });
+        setContentPane(mainPanel);
 
     }
 
     public void addComponents() {
 
-        // Add the menu items to the menu bar
-        containerJMenuBar.add(fileJMenu);
-        containerJMenuBar.add(editJMenu);
-        editJMenu.add(settingsJMenuItem);
-        setJMenuBar(containerJMenuBar);
+        // Options panel addition
+        BiFunction<String, JComboBox<String>, JPanel> createOption = getStringJComboBoxJPanelBiFunction();
+        optionsPanel.add(createOption.apply("Output format:", new JComboBox<>(new String[]{"undefined", "html", "plainText"})));
+        optionsPanel.add(createOption.apply("Locale:", new JComboBox<>(new String[]{"en_US", "es_CO", "fr_FR"})));
+        optionsPanel.add(createOption.apply("Time zone:", new JComboBox<>(new String[]{"America/Los_Angeles", "UTC"})));
+        optionsPanel.add(createOption.apply("Tag syntax:", new JComboBox<>(new String[]{"auto_detect", "angle_bracket", "square_bracket"})));
+        optionsPanel.add(createOption.apply("Interpolation syntax:", new JComboBox<>(new String[]{"legacy", "dollar"})));
 
-        // Add the container panel to the frame
-        setContentPane(containerPanel);
+        // Left column addition
+        leftPanel.add(templateInputScrollPane);
+        leftPanel.add(Box.createVerticalStrut(10));
+        leftPanel.add(optionsPanel);
 
-        // Adding main panels to containerPanel
-        containerPanel.add(northPanel, BorderLayout.NORTH);
-        containerPanel.add(eastPanel, BorderLayout.EAST);
-        containerPanel.add(southPanel, BorderLayout.SOUTH);
-        containerPanel.add(westPanel, BorderLayout.WEST);
-        containerPanel.add(centerPanel, BorderLayout.CENTER);
+        // Right column addition
+        rightPanel.add(dataInputScrollPane);
+        rightPanel.add(Box.createVerticalStrut(10));
+        rightPanel.add(expectedFieldsScrollPane);
 
-        // Adding secondary panels to centerPanel
-        centerPanel.add(northCenterPanel, BorderLayout.NORTH);
-        centerPanel.add(eastCenterPanel, BorderLayout.EAST);
-        centerPanel.add(southCenterPanel, BorderLayout.SOUTH);
-        centerPanel.add(westCenterPanel, BorderLayout.WEST);
-        centerPanel.add(centerCenterPanel, BorderLayout.CENTER);
+        // Columns addition
+        columnsPanel.add(leftPanel);
+        columnsPanel.add(rightPanel);
 
-        // Adding components to the north panel
-        northPanel.add(titleTemplateToolLabel, BorderLayout.NORTH);
-        northPanel.add(templateInputScrollPane, BorderLayout.CENTER);
+        // Bottom panel addition
+        bottomPanel.add(outputJsonScrollPane, BorderLayout.CENTER);
 
-        // Adding components to the center panel
-        centerCenterPanel.add(dataInputScrollPane, BorderLayout.WEST);
-        centerCenterPanel.add(formattedTextAreaScrollPane, BorderLayout.CENTER);
+        // Button panel addition
+        buttonPanel.add(processTemplateButton);
+        bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Adding components to the east panel
-        southCenterPanel.add(outputJsonScrollPane, BorderLayout.SOUTH);
+        // Add to main panel
+        mainPanel.add(columnsPanel, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
 
-        // Adding components to the south panel
-        southButtonPanel.add(processTemplateButton);
-        southButtonPanel.add(templateInputValidateButton);
-        southButtonPanel.add(runTemplateButton);
-        southButtonPanel.add(formatButton);
-        southPanel.add(southButtonPanel, BorderLayout.CENTER);
+    }
 
-        processTemplateButton.addActionListener(e -> processTemplateOutput());
-        runTemplateButton.addActionListener(e -> generatePrettyJsonOutput());
-        templateInputValidateButton.addActionListener(e -> validateTemplateFromInput());
+    private static BiFunction<String, JComboBox<String>, JPanel> getStringJComboBoxJPanelBiFunction() {
+        Font compactFont = new Font("SansSerif", Font.PLAIN, 11);
 
+        // Función auxiliar para crear sub paneles compactos de opción
+        return (labelText, comboBox) -> {
+            JLabel label = new JLabel(labelText);
+            label.setFont(compactFont);
+            comboBox.setFont(compactFont);
+            comboBox.setPreferredSize(new Dimension(120, 22));
+            JPanel panel = new JPanel();
+            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+            panel.add(label);
+            panel.add(comboBox);
+            return panel;
+        };
     }
 
     private void processTemplateOutput() {
