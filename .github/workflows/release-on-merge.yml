@@ -33,8 +33,10 @@ jobs:
         id: get_version
         run: echo "version=$(echo ${{ github.ref_name }} | sed 's/^v//')" >> $GITHUB_OUTPUT
 
-      - name: Mostrar archivos generados
-        run: ls -R application/app-service/build/libs || echo "Directorio vacío o no existe"
+      - name: Obtener nombre del proyecto raíz de Gradle
+        id: get_root_project_name
+        run: |
+          echo "root_project_name=$(grep 'rootProject.name' settings.gradle | cut -d '=' -f 2 | tr -d " '")" >> $GITHUB_OUTPUT
 
       - name: Crear y Subir Release
         uses: softprops/action-gh-release@v2
