@@ -37,6 +37,9 @@ public class TemplateEditor extends JFrame {
     private JPanel bottomPanel;
     private JPanel buttonPanel;
     private JButton clearOutputButton;
+
+    // Panel for validation
+    private JPanel validationPanel;
     private JButton validateFieldsButton;
     private JLabel validationResultLabel;
 
@@ -82,6 +85,7 @@ public class TemplateEditor extends JFrame {
         optionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         bottomPanel = new JPanel(new BorderLayout(5, 5));
 
+        validationPanel = new JPanel();
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
 
         // Template input
@@ -168,6 +172,9 @@ public class TemplateEditor extends JFrame {
         validationResultLabel.setHorizontalAlignment(SwingConstants.CENTER);
         validationResultLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
 
+        // Validation panel setup
+        validationPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+
         // Set default configuration to JFrame
         setTitle("Template Tool (Apache FreeMarker 2.3.34)");
         setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -202,8 +209,13 @@ public class TemplateEditor extends JFrame {
         columnsPanel.add(leftPanel);
         columnsPanel.add(rightPanel);
 
+        // Validation panel addition
+        validationPanel.add(validationResultLabel);
+        validationPanel.add(Box.createHorizontalStrut(10));
+        validationPanel.add(validateFieldsButton);
+
         // Bottom panel addition
-        bottomPanel.add(validationResultLabel, BorderLayout.NORTH);
+        bottomPanel.add(validationPanel, BorderLayout.NORTH);
         bottomPanel.add(outputJsonScrollPane, BorderLayout.CENTER);
 
         // Button panel addition actions
@@ -214,7 +226,6 @@ public class TemplateEditor extends JFrame {
         // Button panel addition
         buttonPanel.add(processTemplateButton);
         buttonPanel.add(clearOutputButton);
-        buttonPanel.add(validateFieldsButton);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Add to main panel
