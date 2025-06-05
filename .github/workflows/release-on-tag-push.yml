@@ -26,9 +26,6 @@ jobs:
       - name: Grant execute permission to Gradle wrapper
         run: chmod +x gradlew
 
-      - name: Build JAR
-        run: ./gradlew :app-service:clean :app-service:build
-
       - name: Extraer versión sin 'v' del tag
         id: get_version
         run: echo "version=$(echo ${{ github.ref_name }} | sed 's/^v//')" >> $GITHUB_OUTPUT
@@ -36,11 +33,12 @@ jobs:
       - name: Obtener nombre del proyecto raíz de Gradle
         id: get_root_project_name
         run: |
-          # Asegúrate de que settings.gradle contenga la línea 'rootProject.name = ...'
-          # La siguiente línea extrae ese valor.
-          echo "root_project_name=$(grep 'rootProject.name' settings.gradle | cut -d '=' -f 2 | tr -d " '")" >> $GITHUB_OUTPUT
+          echo "root_project_name=$(grep -Eo "rootProject\.name\s*=\s*['\"][^'\"]+['\"]" settings.gradle | cut -d '=' -f 2 | tr -d " '\"")" >> $GITHUB_OUTPUT
 
-      - name: Mostrar archivos generados
+      - name: Build JAR (Pasando la versión explícitamente)
+        run: ./gradlew :app-service:clean :app-service:build -Pversion=${{ steps.get_version.outputs.version }}
+
+      - name: Mostrar archivos generados (verificar el nombre)
         run: ls -R application/app-service/build/libs || echo "Directorio vacío o no existe"
 
       - name: Crear y Subir Release
