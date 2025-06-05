@@ -27,7 +27,7 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build JAR
-        run: ./gradlew :application:app-service:clean :application:app-service:build
+        run: ./gradlew :app-service:clean :app-service:build
 
       - name: Extraer versión sin 'v' del tag
         id: get_version
