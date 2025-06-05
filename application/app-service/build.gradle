@@ -2,9 +2,30 @@ plugins {
     id 'application'
 }
 
+group = 'co.com.leronarenwino'
+version = '1.0-SNAPSHOT'
+
 application {
     mainClass = 'co.com.leronarenwino.Main'
 }
+
+jar {
+    archiveBaseName.set(rootProject.name)
+
+    manifest {
+        attributes(
+                'Main-Class': application.mainClass.get()
+        )
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+
 
 dependencies {
     implementation project(':gui')
