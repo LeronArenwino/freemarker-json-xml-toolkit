@@ -36,7 +36,7 @@ jobs:
 
       - name: Build JAR
         # ¡CORREGIDO! Path completo del subproyecto Gradle anidado
-        run: ./gradlew :application:app-service:clean :application:app-service:build
+        run: ./gradlew app-service:clean :application:app-service:build
 
       - name: Mostrar archivos generados
         # ¡CORREGIDO! Ruta completa al directorio 'libs' dentro del subproyecto anidado
