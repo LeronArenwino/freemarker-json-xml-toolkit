@@ -17,127 +17,34 @@
 
 package co.com.leronarenwino;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 public class TemplateValidator {
 
-    private static final Set<String> REQUIRED_FIELDS = new HashSet<>();
-
-    static {
-        REQUIRED_FIELDS.add("anotherHeader");
+    public static String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception {
+        return FreemarkerProcessor.processTemplate(templateContent, dataModel);
     }
 
-    public static boolean validateTemplate(String templateContent, Map<String, Object> dataModel) {
-        try {
-            // Configure FreeMarker
-            Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-            cfg.setDefaultEncoding("UTF-8");
-
-            // Load template from string
-            Template template = new Template("template", new StringReader(templateContent), cfg);
-
-            // Generate JSON output
-            StringWriter writer = new StringWriter();
-            template.process(dataModel, writer);
-            String jsonOutput = writer.toString();
-
-            // Validate JSON structure
-            ObjectMapper objectMapper = new ObjectMapper();
-            JsonNode jsonNode = objectMapper.readTree(jsonOutput);
-
-            for (String field : REQUIRED_FIELDS) {
-                if (!jsonNode.has(field)) {
-                    System.out.println("Missing required field: " + field);
-                    return false;
-                }
-            }
-            return true;
-        } catch (Exception e) {
-            System.err.println("Error processing template: " + e.getMessage());
-            return false;
-        }
-    }
-
-    public static String generateJsonOutput(String templateContent, Map<String, Object> dataModel) throws Exception {
-        Configuration cfg = new Configuration(Configuration.VERSION_2_3_31);
-        cfg.setDefaultEncoding("UTF-8");
-        Template template = new Template("template", new StringReader(templateContent), cfg);
-        StringWriter writer = new StringWriter();
-        template.process(dataModel, writer);
-        return writer.toString();
-    }
-
-    public static String generatePrettyJsonOutput(String templateContent, Map<String, Object> dataModel) throws Exception {
-        String jsonOutput = generateJsonOutput(templateContent, dataModel);
+    public static List<String> validateFieldsPresent(String jsonOutput, String[] expectedFields) throws Exception {
+        List<String> missing = new ArrayList<>();
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        Object json = mapper.readValue(jsonOutput, Object.class);
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-    }
-
-    public static String formatFreemarkerTemplate(String template) {
-        // Remove escaped double quotes only
-        String unescaped = template.replace("\\\"", "\"");
-
-        // Find the last assignment (>) to split assignments and JSON
-        int lastAssign = unescaped.lastIndexOf('>');
-        if (lastAssign != -1 && lastAssign + 1 < unescaped.length()) {
-            String assignments = unescaped.substring(0, lastAssign + 1);
-            String jsonPart = unescaped.substring(lastAssign + 1).trim();
-
-            // Format assignments: each on its own line, no extra characters
-            String[] assignLines = assignments.split("><");
-            StringBuilder prettyAssigns = new StringBuilder();
-            for (int i = 0; i < assignLines.length; i++) {
-                String line = assignLines[i];
-                // Remove trailing '>' if present (to avoid double '>')
-                if (line.endsWith(">")) {
-                    line = line.substring(0, line.length() - 1);
-                }
-                if (i > 0) prettyAssigns.append("<");
-                prettyAssigns.append(line).append(">");
-                if (i < assignLines.length - 1) prettyAssigns.append("\n");
+        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(jsonOutput);
+        for (String field : expectedFields) {
+            if (!field.isEmpty() && !jsonNode.has(field)) {
+                missing.add(field);
             }
-
-            // Pretty-print the JSON part
-            String prettyJson = jsonPart;
-            try {
-                com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-                Object json = mapper.readValue(jsonPart, Object.class);
-                prettyJson = "\n" + mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json) + "\n";
-            } catch (Exception e) {
-                // If not valid JSON, leave as is
-            }
-
-            // Combine formatted assignments and pretty JSON, no extra newlines
-            return prettyAssigns + prettyJson;
         }
-        return unescaped;
+        return missing;
     }
 
-    public static void testing(String[] args) {
-
-        // Example FreeMarker template content
-        String templateContent = "<#assign headers = headers>{\"anotherHeader\": \"${headers!\"error\"?truncate(50, '')}\"}";
-
-        Map<String, Object> dataModel = new HashMap<>();
-
-        Map<String, String> headers = new HashMap<>();
-        headers.put("notAnotherHeader", "abc123");
-
-        dataModel.put("headers", headers);
-
-        // Validate template
-        boolean isValid = validateTemplate(templateContent, dataModel);
+    public static Map<String, Object> parseJsonToDataModel(String json) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+        return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<>() {
+        });
     }
 
 }
