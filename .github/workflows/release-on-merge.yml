@@ -8,14 +8,20 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    # ¡IMPORTANTE! Otorga permisos de escritura al GITHUB_TOKEN para este job.
-    # Es crucial para que la acción pueda crear releases y subir archivos.
     permissions:
-      contents: write # Permiso necesario para crear y subir assets a un release
+      contents: write
 
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
+
+      # --- ¡NUEVO PASO DE DEPURACIÓN CRÍTICO! ---
+      - name: Debug Listar contenido del directorio raíz después del checkout
+        run: |
+          echo "Contenido del directorio actual ($(pwd)):"
+          ls -la
+          echo "---"
+      # --- Fin del nuevo paso de depuración ---
 
       - name: Setup JDK
         uses: actions/setup-java@v3
@@ -24,36 +30,29 @@ jobs:
           java-version: '17'
 
       - name: Grant execute permission to Gradle wrapper
+        # Este paso fallará si 'gradlew' no está en la raíz o en 'app-service'.
+        # Revisa el 'ls -la' anterior para confirmar su ubicación.
         run: chmod +x gradlew
 
       - name: Build JAR
-        # Ejecuta la compilación de tu subproyecto 'app-service'.
-        # Asegúrate de que este comando se complete sin errores.
+        # Este paso fallará si 'app-service' no existe o la ruta es incorrecta.
         run: ./gradlew :app-service:clean :app-service:build
 
-      # --- Pasos de depuración para encontrar el JAR (quitar una vez resuelto) ---
-      - name: Debug Listar contenido de app-service/build
-        # Este paso te mostrará el contenido del directorio 'build' dentro de 'app-service'.
-        # Busca aquí la carpeta 'libs' o cualquier otra donde se guarde el JAR.
+      # --- Pasos de depuración existentes (ahora más útiles) ---
+      - name: Debug: Listar contenido de app-service/build
         run: ls -R app-service/build || echo "Directorio 'app-service/build' no existe o está vacío."
 
-      - name: Debug Listar contenido de app-service
-        # Una comprobación más amplia si el anterior no muestra nada.
+      - name: Debug: Listar contenido de app-service
         run: ls -R app-service || echo "Directorio 'app-service' no existe o está vacío."
       # --- Fin de los pasos de depuración ---
 
-      - name: Mostrar archivos generados (verificación final de la ruta)
-        # Este paso confirma que el JAR existe en la ruta esperada antes del release.
-        # Ajusta la ruta 'app-service/build/libs' si los pasos de depuración indican otra.
+      - name: Mostrar archivos generados
         run: ls -R app-service/build/libs || echo "Directorio vacío o no existe"
 
       - name: Generar tag único
-        # Crea un nombre de tag único usando el número de ejecución de GitHub Actions y el SHA del commit.
         run: echo "TAG_NAME=v1.0.${{ github.run_number }}-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Crear y Subir Release
-        # Esta acción crea el release en GitHub y, gracias al parámetro 'files',
-        # sube automáticamente los archivos JAR encontrados en la ruta especificada.
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
@@ -61,6 +60,4 @@ jobs:
           body: "Release generado automáticamente"
           draft: false
           prerelease: false
-          # ¡IMPORTANTE! Ajusta esta ruta si tu JAR está en un subdirectorio diferente
-          # dentro de 'app-service/build/libs' o en otra parte.
           files: app-service/build/libs/*.jar
