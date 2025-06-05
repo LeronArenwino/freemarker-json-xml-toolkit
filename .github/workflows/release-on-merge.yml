@@ -1,9 +1,9 @@
-name: Release JAR on merge to main
+name: Release JAR on tag push
 
 on:
-  push:
-    branches:
-      - main
+  create:
+    tags:
+      - 'v*.*.*'
 
 jobs:
   build:
@@ -14,16 +14,8 @@ jobs:
     steps:
       - name: Checkout código
         uses: actions/checkout@v4
-
-      - name: Debug Listar contenido del directorio raíz después del checkout
-        run: |
-          echo "Contenido del directorio actual ($(pwd)):"
-          ls -la
-          echo "---"
-
-      - name: Debug Listar contenido de application/app-service
-        # Nuevo paso de depuración para confirmar la existencia de la carpeta app-service anidada
-        run: ls -R application/app-service || echo "Directorio 'application/app-service' no existe o está vacío."
+        with:
+          fetch-depth: 0
 
       - name: Setup JDK
         uses: actions/setup-java@v3
@@ -35,23 +27,21 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build JAR
-        # ¡CORREGIDO! Path completo del subproyecto Gradle anidado
-        run: ./gradlew app-service:clean :app-service:build
+        run: ./gradlew :application:app-service:clean :application:app-service:build
+
+      - name: Extraer versión sin 'v' del tag
+        id: get_version
+        run: echo "version=$(echo ${{ github.ref_name }} | sed 's/^v//')" >> $GITHUB_OUTPUT
 
       - name: Mostrar archivos generados
-        # ¡CORREGIDO! Ruta completa al directorio 'libs' dentro del subproyecto anidado
         run: ls -R application/app-service/build/libs || echo "Directorio vacío o no existe"
-
-      - name: Generar tag único
-        run: echo "TAG_NAME=v1.0.${{ github.run_number }}-$(echo $GITHUB_SHA | cut -c1-7)" >> $GITHUB_ENV
 
       - name: Crear y Subir Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
-          body: "Release generado automáticamente"
+          tag_name: ${{ github.ref_name }}
+          name: Release ${{ steps.get_version.outputs.version }}
+          body: "Release generado automáticamente para la versión ${{ steps.get_version.outputs.version }}"
           draft: false
           prerelease: false
-          # ¡CORREGIDO! Ruta completa para los archivos JAR
-          files: application/app-service/build/libs/*.jar
+          files: application/app-service/build/libs/${{ rootProject.name }}-${{ steps.get_version.outputs.version }}.jar
