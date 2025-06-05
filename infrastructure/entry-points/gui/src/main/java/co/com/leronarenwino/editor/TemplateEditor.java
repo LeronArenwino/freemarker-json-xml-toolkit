@@ -37,6 +37,8 @@ public class TemplateEditor extends JFrame {
     private JPanel bottomPanel;
     private JPanel buttonPanel;
     private JButton clearOutputButton;
+    private JButton validateFieldsButton;
+    private JLabel validationResultLabel;
 
     // Components for template input
     private JTextArea templateInputTextArea;
@@ -103,11 +105,13 @@ public class TemplateEditor extends JFrame {
         outputJsonTextArea.setWrapStyleWord(true);
         outputJsonScrollPane = new JScrollPane(outputJsonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
+        // Validation result label
+        validationResultLabel = new JLabel("Validation result will appear here.");
+
         // Buttons
         processTemplateButton = new JButton("Evaluate Template");
-        processTemplateButton.addActionListener(e -> processTemplateOutput());
         clearOutputButton = new JButton("Clear Output");
-        clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
+        validateFieldsButton = new JButton("Validate Output Fields");
 
     }
 
@@ -150,12 +154,19 @@ public class TemplateEditor extends JFrame {
                 )
         );
 
+        // Output JSON text area setup
         outputJsonScrollPane.setBorder(
                 BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.GRAY, 1, true),
                         "Rendered Result"
                 )
         );
+
+        // Buttons setup
+        validationResultLabel.setForeground(Color.GRAY);
+        validationResultLabel.setVerticalAlignment(SwingConstants.CENTER);
+        validationResultLabel.setHorizontalAlignment(SwingConstants.CENTER);
+        validationResultLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
 
         // Set default configuration to JFrame
         setTitle("Template Tool (Apache FreeMarker 2.3.34)");
@@ -192,11 +203,18 @@ public class TemplateEditor extends JFrame {
         columnsPanel.add(rightPanel);
 
         // Bottom panel addition
+        bottomPanel.add(validationResultLabel, BorderLayout.NORTH);
         bottomPanel.add(outputJsonScrollPane, BorderLayout.CENTER);
+
+        // Button panel addition actions
+        processTemplateButton.addActionListener(e -> processTemplateOutput());
+        clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
+        validateFieldsButton.addActionListener(e -> validateOutputFields());
 
         // Button panel addition
         buttonPanel.add(processTemplateButton);
         buttonPanel.add(clearOutputButton);
+        buttonPanel.add(validateFieldsButton);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Add to main panel
@@ -233,30 +251,30 @@ public class TemplateEditor extends JFrame {
         }
     }
 
-    private void validateTemplateFromInput() {
+    private void validateOutputFields() {
         String output = outputJsonTextArea.getText();
-        try {
-            boolean isValid = TemplateValidator.validateJson(output);
-            JOptionPane.showMessageDialog(this,
-                    isValid ? "Template is valid!" : "Template is NOT valid.",
-                    "Validation Result",
-                    isValid ? JOptionPane.INFORMATION_MESSAGE : JOptionPane.ERROR_MESSAGE);
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this,
-                    "Invalid JSON in output: " + ex.getMessage(),
-                    "Error",
-                    JOptionPane.ERROR_MESSAGE);
+        if (output.contains("\\\"")) {
+            output = output.replace("\\\"", "\"");
         }
-    }
-
-    private void generatePrettyJsonOutput() {
-        String templateContent = templateInputTextArea.getText();
+        String expectedFieldsText = expectedFieldsTextArea.getText();
+        if (expectedFieldsText.trim().isEmpty()) {
+            validationResultLabel.setText("No expected fields specified.");
+            validationResultLabel.setForeground(Color.GRAY);
+            return;
+        }
+        String[] expectedFields = expectedFieldsText.split("\\s*,\\s*|\\s+");
         try {
-            Map<String, Object> dataModel = getDataModelFromInput();
-            String prettyJson = TemplateValidator.generatePrettyJsonOutput(templateContent, dataModel);
-            outputJsonTextArea.setText(prettyJson);
-        } catch (Exception ex) {
-            outputJsonTextArea.setText("Error generating output: " + ex.getMessage());
+            java.util.List<String> missing = TemplateValidator.validateFieldsPresent(output, expectedFields);
+            if (missing.isEmpty()) {
+                validationResultLabel.setText("All expected fields are present.");
+                validationResultLabel.setForeground(new java.awt.Color(0, 128, 0));
+            } else {
+                validationResultLabel.setText("Missing fields: " + String.join(", ", missing));
+                validationResultLabel.setForeground(java.awt.Color.RED);
+            }
+        } catch (Exception e) {
+            validationResultLabel.setText("Invalid JSON output.");
+            validationResultLabel.setForeground(java.awt.Color.RED);
         }
     }
 
