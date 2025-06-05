@@ -41,17 +41,6 @@ public class TemplateValidator {
         return missing;
     }
 
-    public static String generateJsonOutput(String templateContent, Map<String, Object> dataModel) throws Exception {
-        return processTemplate(templateContent, dataModel);
-    }
-
-    public static String generatePrettyJsonOutput(String templateContent, Map<String, Object> dataModel) throws Exception {
-        String jsonOutput = generateJsonOutput(templateContent, dataModel);
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        Object json = mapper.readValue(jsonOutput, Object.class);
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
-    }
-
     public static Map<String, Object> parseJsonToDataModel(String json) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
         return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<>() {
