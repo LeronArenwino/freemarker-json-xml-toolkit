@@ -18,6 +18,7 @@
 package co.com.leronarenwino.editor;
 
 import co.com.leronarenwino.TemplateValidator;
+import co.com.leronarenwino.settings.Settings;
 
 import javax.swing.*;
 import java.awt.*;
@@ -27,6 +28,11 @@ public class TemplateEditor extends JFrame {
 
     // Main container panel
     private JPanel mainPanel;
+
+    private JMenuBar menuBar;
+    private JMenu fileMenu;
+    private JMenuItem exitItem;
+    private JMenuItem openSettingsItem;
 
     // Panels for layout
     private JPanel columnsPanel;
@@ -76,6 +82,12 @@ public class TemplateEditor extends JFrame {
         // Main panels
         mainPanel = new JPanel(new BorderLayout(10, 10));
         columnsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+
+        // Menu bar and menu items
+        menuBar = new JMenuBar();
+        fileMenu = new JMenu("File");
+        exitItem = new JMenuItem("Exit");
+        openSettingsItem = new JMenuItem("Settings...");
 
         // Left, right, and options panels
         leftPanel = new JPanel();
@@ -179,11 +191,19 @@ public class TemplateEditor extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1280, 720);
         setLocationRelativeTo(null);
+        setJMenuBar(menuBar);
         setContentPane(mainPanel);
 
     }
 
     public void addComponents() {
+
+        // Menu bar addition
+        exitItem.addActionListener(e -> System.exit(0));
+        fileMenu.add(openSettingsItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
+        menuBar.add(fileMenu);
 
         // Left column addition
         leftPanel.add(templateInputScrollPane);
@@ -207,6 +227,10 @@ public class TemplateEditor extends JFrame {
         bottomPanel.add(outputJsonScrollPane, BorderLayout.CENTER);
 
         // Button panel addition actions
+        openSettingsItem.addActionListener(e -> {
+            Settings settingsDialog = new Settings(this);
+            settingsDialog.setVisible(true);
+        });
         processTemplateButton.addActionListener(e -> processTemplateOutput());
         clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
         validateFieldsButton.addActionListener(e -> validateOutputFields());
