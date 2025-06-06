@@ -22,7 +22,6 @@ import co.com.leronarenwino.TemplateValidator;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 public class TemplateEditor extends JFrame {
 
@@ -32,7 +31,6 @@ public class TemplateEditor extends JFrame {
     // Panels for layout
     private JPanel columnsPanel;
     private JPanel leftPanel;
-    private JPanel optionsPanel;
     private JPanel rightPanel;
     private JPanel bottomPanel;
     private JPanel buttonPanel;
@@ -82,7 +80,6 @@ public class TemplateEditor extends JFrame {
         // Left, right, and options panels
         leftPanel = new JPanel();
         rightPanel = new JPanel();
-        optionsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         bottomPanel = new JPanel(new BorderLayout(5, 5));
 
         validationPanel = new JPanel();
@@ -93,20 +90,17 @@ public class TemplateEditor extends JFrame {
         templateInputScrollPane = new JScrollPane(templateInputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         // Data input
-        dataInputTextArea = new JTextArea(6, 40);
-        dataInputScrollPane = new JScrollPane(dataInputTextArea);
+        dataInputTextArea = new JTextArea(12, 40);
+        dataInputScrollPane = new JScrollPane(dataInputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
 
         // Right panel options
         // (You can add more fields as needed)
         // Example for validation area
-        expectedFieldsTextArea = new JTextArea(6, 30);
-        expectedFieldsScrollPane = new JScrollPane(expectedFieldsTextArea);
+        expectedFieldsTextArea = new JTextArea(6, 40);
+        expectedFieldsScrollPane = new JScrollPane(expectedFieldsTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         // Output/result area
         outputJsonTextArea = new JTextArea(8, 80);
-        outputJsonTextArea.setEditable(false);
-        outputJsonTextArea.setLineWrap(true);
-        outputJsonTextArea.setWrapStyleWord(true);
         outputJsonScrollPane = new JScrollPane(outputJsonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
         // Validation result label
@@ -159,6 +153,9 @@ public class TemplateEditor extends JFrame {
         );
 
         // Output JSON text area setup
+        outputJsonTextArea.setEditable(false);
+        outputJsonTextArea.setLineWrap(true);
+        outputJsonTextArea.setWrapStyleWord(true);
         outputJsonScrollPane.setBorder(
                 BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.GRAY, 1, true),
@@ -177,6 +174,7 @@ public class TemplateEditor extends JFrame {
 
         // Set default configuration to JFrame
         setTitle("Template Tool (Apache FreeMarker 2.3.34)");
+        setMinimumSize(new Dimension(600, 480));
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1280, 720);
@@ -187,18 +185,8 @@ public class TemplateEditor extends JFrame {
 
     public void addComponents() {
 
-        // Options panel addition
-        BiFunction<String, JComboBox<String>, JPanel> createOption = getStringJComboBoxJPanelBiFunction();
-        optionsPanel.add(createOption.apply("Output format:", new JComboBox<>(new String[]{"undefined", "html", "plainText"})));
-        optionsPanel.add(createOption.apply("Locale:", new JComboBox<>(new String[]{"en_US", "es_CO", "fr_FR"})));
-        optionsPanel.add(createOption.apply("Time zone:", new JComboBox<>(new String[]{"America/Los_Angeles", "UTC"})));
-        optionsPanel.add(createOption.apply("Tag syntax:", new JComboBox<>(new String[]{"auto_detect", "angle_bracket", "square_bracket"})));
-        optionsPanel.add(createOption.apply("Interpolation syntax:", new JComboBox<>(new String[]{"legacy", "dollar"})));
-
         // Left column addition
         leftPanel.add(templateInputScrollPane);
-        leftPanel.add(Box.createVerticalStrut(10));
-        leftPanel.add(optionsPanel);
 
         // Right column addition
         rightPanel.add(dataInputScrollPane);
@@ -234,22 +222,6 @@ public class TemplateEditor extends JFrame {
 
     }
 
-    private static BiFunction<String, JComboBox<String>, JPanel> getStringJComboBoxJPanelBiFunction() {
-        Font compactFont = new Font("SansSerif", Font.PLAIN, 11);
-
-        // Función auxiliar para crear sub paneles compactos de opción
-        return (labelText, comboBox) -> {
-            JLabel label = new JLabel(labelText);
-            label.setFont(compactFont);
-            comboBox.setFont(compactFont);
-            comboBox.setPreferredSize(new Dimension(120, 22));
-            JPanel panel = new JPanel();
-            panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
-            panel.add(label);
-            panel.add(comboBox);
-            return panel;
-        };
-    }
 
     private void processTemplateOutput() {
         String templateContent = templateInputTextArea.getText();
