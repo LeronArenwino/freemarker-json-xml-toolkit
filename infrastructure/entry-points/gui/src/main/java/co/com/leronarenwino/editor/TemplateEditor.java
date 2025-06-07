@@ -63,6 +63,7 @@ public class TemplateEditor extends JFrame {
     // Components for output/result area
     private JTextArea outputJsonTextArea;
     private JScrollPane outputJsonScrollPane;
+    private JButton formatJsonButton;
 
     public TemplateEditor() {
 
@@ -121,6 +122,7 @@ public class TemplateEditor extends JFrame {
         // Buttons
         processTemplateButton = new JButton("Evaluate Template");
         clearOutputButton = new JButton("Clear Output");
+        formatJsonButton = new JButton("Format JSON");
         validateFieldsButton = new JButton("Validate Output Fields");
 
     }
@@ -206,10 +208,10 @@ public class TemplateEditor extends JFrame {
         menuBar.add(fileMenu);
 
         // Left column addition
-        leftPanel.add(templateInputScrollPane);
+        leftPanel.add(dataInputScrollPane);
 
         // Right column addition
-        rightPanel.add(dataInputScrollPane);
+        rightPanel.add(templateInputScrollPane);
         rightPanel.add(Box.createVerticalStrut(10));
         rightPanel.add(expectedFieldsScrollPane);
 
@@ -231,6 +233,7 @@ public class TemplateEditor extends JFrame {
             Settings settingsDialog = new Settings(this);
             settingsDialog.setVisible(true);
         });
+        formatJsonButton.addActionListener(e -> formatJsonOutput());
         processTemplateButton.addActionListener(e -> processTemplateOutput());
         clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
         validateFieldsButton.addActionListener(e -> validateOutputFields());
@@ -238,6 +241,7 @@ public class TemplateEditor extends JFrame {
         // Button panel addition
         buttonPanel.add(processTemplateButton);
         buttonPanel.add(clearOutputButton);
+        buttonPanel.add(formatJsonButton);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Add to main panel
@@ -288,6 +292,17 @@ public class TemplateEditor extends JFrame {
     private Map<String, Object> getDataModelFromInput() throws Exception {
         String json = dataInputTextArea.getText().trim();
         return TemplateValidator.parseJsonToDataModel(json.isEmpty() ? "{}" : json);
+    }
+
+    private void formatJsonOutput() {
+        String text = outputJsonTextArea.getText();
+        if (text.trim().isEmpty()) return;
+        try {
+            String pretty = TemplateValidator.formatJson(text);
+            outputJsonTextArea.setText(pretty);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, "Invalid JSON: " + ex.getMessage(), "Format Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
 }

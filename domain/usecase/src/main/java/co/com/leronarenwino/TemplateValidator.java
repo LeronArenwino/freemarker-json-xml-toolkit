@@ -47,4 +47,15 @@ public class TemplateValidator {
         });
     }
 
+    public static String formatJson(String json) throws Exception {
+        String processed = json;
+        // If the JSON contains \" and not valid, try to unescape
+        if (processed.contains("\\\"")) {
+            processed = processed.replace("\\\"", "\"");
+        }
+        ObjectMapper mapper = new ObjectMapper();
+        Object obj = mapper.readValue(processed, Object.class);
+        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
+    }
+
 }
