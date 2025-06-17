@@ -1,6 +1,8 @@
 dependencies {
     implementation project(':usecase')
 
+    implementation 'com.fifesoft:rsyntaxtextarea:3.6.0'
+
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
 }

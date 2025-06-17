@@ -19,6 +19,9 @@ package co.com.leronarenwino.editor;
 
 import co.com.leronarenwino.TemplateValidator;
 import co.com.leronarenwino.settings.Settings;
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
@@ -40,7 +43,9 @@ public class TemplateEditor extends JFrame {
     private JPanel rightPanel;
     private JPanel bottomPanel;
     private JPanel buttonPanel;
-    private JButton clearOutputButton;
+    private JPanel centerButtonsPanel;
+    private Box leftTemplatePositionBox;
+    private Box rightDataPositionBox;
 
     // Panel for validation
     private JPanel validationPanel;
@@ -48,22 +53,30 @@ public class TemplateEditor extends JFrame {
     private JLabel validationResultLabel;
 
     // Components for template input
-    private JTextArea templateInputTextArea;
+    private RSyntaxTextArea templateInputTextArea;
     private JScrollPane templateInputScrollPane;
-    private JButton processTemplateButton;
 
     // Components for data input
-    private JTextArea dataInputTextArea;
+    private RSyntaxTextArea dataInputTextArea;
     private JScrollPane dataInputScrollPane;
 
     // Components for expected fields
-    private JTextArea expectedFieldsTextArea;
+    private RSyntaxTextArea expectedFieldsTextArea;
     private JScrollPane expectedFieldsScrollPane;
 
     // Components for output/result area
-    private JTextArea outputJsonTextArea;
+    private RSyntaxTextArea outputJsonTextArea;
     private JScrollPane outputJsonScrollPane;
+
+    // Caret position labels
+    private JLabel templatePositionLabel;
+    private JLabel dataPositionLabel;
+    private JLabel outputPositionLabel;
+
+    // Buttons for actions
+    private JButton processTemplateButton;
     private JButton formatJsonButton;
+    private JButton clearOutputButton;
 
     public TemplateEditor() {
 
@@ -94,27 +107,38 @@ public class TemplateEditor extends JFrame {
         leftPanel = new JPanel();
         rightPanel = new JPanel();
         bottomPanel = new JPanel(new BorderLayout(5, 5));
+        leftTemplatePositionBox = Box.createHorizontalBox();
+        rightDataPositionBox = Box.createHorizontalBox();
 
+        // Validation and button panels
         validationPanel = new JPanel();
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        buttonPanel = new JPanel(new BorderLayout(5, 5));
+        centerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
 
         // Template input
-        templateInputTextArea = new JTextArea(10, 40);
-        templateInputScrollPane = new JScrollPane(templateInputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        templateInputTextArea = new RSyntaxTextArea(10, 40);
+        templateInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
+        templateInputTextArea.setCodeFoldingEnabled(true);
+        templateInputScrollPane = new RTextScrollPane(templateInputTextArea, true);
 
         // Data input
-        dataInputTextArea = new JTextArea(12, 40);
-        dataInputScrollPane = new JScrollPane(dataInputTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+        dataInputTextArea = new RSyntaxTextArea(12, 40);
+        dataInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        dataInputTextArea.setCodeFoldingEnabled(true);
+        dataInputScrollPane = new RTextScrollPane(dataInputTextArea, true);
 
         // Right panel options
         // (You can add more fields as needed)
         // Example for validation area
-        expectedFieldsTextArea = new JTextArea(6, 40);
-        expectedFieldsScrollPane = new JScrollPane(expectedFieldsTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        expectedFieldsTextArea = new RSyntaxTextArea(6, 40);
+        expectedFieldsTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
+        expectedFieldsScrollPane = new RTextScrollPane(expectedFieldsTextArea, true);
 
         // Output/result area
-        outputJsonTextArea = new JTextArea(8, 80);
-        outputJsonScrollPane = new JScrollPane(outputJsonTextArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        outputJsonTextArea = new RSyntaxTextArea(8, 80);
+        outputJsonTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        outputJsonTextArea.setCodeFoldingEnabled(false);
+        outputJsonScrollPane = new RTextScrollPane(outputJsonTextArea, true);
 
         // Validation result label
         validationResultLabel = new JLabel("Validation result will appear here.");
@@ -124,6 +148,11 @@ public class TemplateEditor extends JFrame {
         clearOutputButton = new JButton("Clear Output");
         formatJsonButton = new JButton("Format JSON");
         validateFieldsButton = new JButton("Validate Output Fields");
+
+        // Caret position labels
+        templatePositionLabel = new JLabel("Line: 1  Column: 1");
+        dataPositionLabel = new JLabel("Line: 1  Column: 1");
+        outputPositionLabel = new JLabel("Line: 1  Column: 1");
 
     }
 
@@ -209,10 +238,15 @@ public class TemplateEditor extends JFrame {
 
         // Left column addition
         leftPanel.add(dataInputScrollPane);
+        leftTemplatePositionBox.add(Box.createHorizontalGlue());
+        leftTemplatePositionBox.add(dataPositionLabel);
+        leftPanel.add(leftTemplatePositionBox);
 
         // Right column addition
         rightPanel.add(templateInputScrollPane);
-        rightPanel.add(Box.createVerticalStrut(10));
+        rightDataPositionBox.add(Box.createHorizontalGlue());
+        rightDataPositionBox.add(templatePositionLabel);
+        rightPanel.add(rightDataPositionBox);
         rightPanel.add(expectedFieldsScrollPane);
 
         // Columns addition
@@ -238,15 +272,24 @@ public class TemplateEditor extends JFrame {
         clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
         validateFieldsButton.addActionListener(e -> validateOutputFields());
 
+        // Center buttons panel addition
+        centerButtonsPanel.add(processTemplateButton);
+        centerButtonsPanel.add(formatJsonButton);
+        centerButtonsPanel.add(clearOutputButton);
+
         // Button panel addition
-        buttonPanel.add(processTemplateButton);
-        buttonPanel.add(clearOutputButton);
-        buttonPanel.add(formatJsonButton);
+        buttonPanel.add(centerButtonsPanel, BorderLayout.CENTER);
+        buttonPanel.add(outputPositionLabel, BorderLayout.EAST);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Add to main panel
         mainPanel.add(columnsPanel, BorderLayout.CENTER);
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+
+        // Add caret listeners to update position labels
+        templateInputTextArea.addCaretListener(e -> updateCaretPosition(templateInputTextArea, templatePositionLabel));
+        dataInputTextArea.addCaretListener(e -> updateCaretPosition(dataInputTextArea, dataPositionLabel));
+        outputJsonTextArea.addCaretListener(e -> updateCaretPosition(outputJsonTextArea, outputPositionLabel));
 
     }
 
@@ -304,5 +347,17 @@ public class TemplateEditor extends JFrame {
             JOptionPane.showMessageDialog(this, "Invalid JSON: " + ex.getMessage(), "Format Error", JOptionPane.ERROR_MESSAGE);
         }
     }
+
+    private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
+        int caretPos = textArea.getCaretPosition();
+        try {
+            int line = textArea.getLineOfOffset(caretPos) + 1;
+            int column = caretPos - textArea.getLineStartOffset(line - 1) + 1;
+            label.setText("Line: " + line + "  Column: " + column);
+        } catch (Exception ex) {
+            label.setText("Line: ?, Column: ?");
+        }
+    }
+
 
 }
