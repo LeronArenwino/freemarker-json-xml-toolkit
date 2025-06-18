@@ -1,3 +1,6 @@
 dependencies {
+    implementation project(':usecase')
+    implementation project(':global-settings')
+
     implementation 'org.freemarker:freemarker:2.3.34'
 }

@@ -17,21 +17,8 @@
 
 package co.com.leronarenwino;
 
-import co.com.leronarenwino.config.FreemarkerConfigProvider;
-import freemarker.template.Template;
-
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Map;
 
-public class FreemarkerProcessor implements TemplateProcessor{
-
-    @Override
-    public String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception {
-        Template template = new Template("template", new StringReader(templateContent), FreemarkerConfigProvider.getConfiguration());
-        StringWriter writer = new StringWriter();
-        template.process(dataModel, writer);
-        return writer.toString();
-    }
-
+public interface TemplateProcessor {
+    String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception;
 }

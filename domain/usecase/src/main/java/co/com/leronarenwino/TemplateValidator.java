@@ -25,8 +25,14 @@ import java.util.Map;
 
 public class TemplateValidator {
 
-    public static String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception {
-        return FreemarkerProcessor.processTemplate(templateContent, dataModel);
+    private final TemplateProcessor templateProcessor;
+
+    public TemplateValidator(TemplateProcessor templateProcessor) {
+        this.templateProcessor = templateProcessor;
+    }
+
+    public String processTemplate(String templateContent, Map<String, Object> dataModel) throws Exception {
+        return templateProcessor.processTemplate(templateContent, dataModel);
     }
 
     public static List<String> validateFieldsPresent(String jsonOutput, String[] expectedFields) throws Exception {

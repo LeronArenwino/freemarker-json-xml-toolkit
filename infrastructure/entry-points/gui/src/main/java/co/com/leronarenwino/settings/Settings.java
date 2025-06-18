@@ -17,8 +17,11 @@
 
 package co.com.leronarenwino.settings;
 
+import utils.SettingsSingleton;
+
 import javax.swing.*;
 import java.awt.*;
+import java.util.Properties;
 import java.util.function.BiFunction;
 
 public class Settings extends JDialog {
@@ -29,6 +32,9 @@ public class Settings extends JDialog {
 
     private JPanel buttonPanel;
     private JButton closeButton;
+
+    private JComboBox<String> localeCombo;
+    private JComboBox<String> timeZoneCombo;
 
     public Settings(JFrame parent) {
         super(parent, "FreeMarker Options", true);
@@ -54,6 +60,10 @@ public class Settings extends JDialog {
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         closeButton = new JButton("Close");
 
+        // Initializing combo boxes with options
+        localeCombo = new JComboBox<>(new String[]{"en_US", "es_CO", "fr_FR"});
+        timeZoneCombo = new JComboBox<>(new String[]{"America/Los_Angeles", "UTC"});
+
     }
 
     private void setComponents() {
@@ -70,15 +80,16 @@ public class Settings extends JDialog {
     private void addComponents() {
 
         // Adding options to the options panel
-        optionsPanel.add(createOption.apply("Output format:", new JComboBox<>(new String[]{"undefined", "html", "plainText"})));
+        Properties defaults = SettingsSingleton.defaultFreemarkerProperties();
+
+        // Setting default values for combo boxes from the defaults properties
+        localeCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
+        timeZoneCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
+
+        // Creating and adding option panels to the options panel
+        optionsPanel.add(createOption.apply("Locale:", localeCombo));
         optionsPanel.add(Box.createVerticalStrut(5));
-        optionsPanel.add(createOption.apply("Locale:", new JComboBox<>(new String[]{"en_US", "es_CO", "fr_FR"})));
-        optionsPanel.add(Box.createVerticalStrut(5));
-        optionsPanel.add(createOption.apply("Time zone:", new JComboBox<>(new String[]{"America/Los_Angeles", "UTC"})));
-        optionsPanel.add(Box.createVerticalStrut(5));
-        optionsPanel.add(createOption.apply("Tag syntax:", new JComboBox<>(new String[]{"auto_detect", "angle_bracket", "square_bracket"})));
-        optionsPanel.add(Box.createVerticalStrut(5));
-        optionsPanel.add(createOption.apply("Interpolation syntax:", new JComboBox<>(new String[]{"legacy", "dollar"})));
+        optionsPanel.add(createOption.apply("Time zone:", timeZoneCombo));
 
         // Adding the close button to the button panel
         closeButton.addActionListener(e -> dispose());

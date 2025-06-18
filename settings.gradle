@@ -16,3 +16,5 @@ include 'gui'
 project(':gui').projectDir = file("infrastructure/entry-points/gui")
 include 'freemarker-adapter'
 project(':freemarker-adapter').projectDir = file("infrastructure/driven-adapters/freemarker-adapter")
+include 'global-settings'
+project(':global-settings').projectDir = file("infrastructure/helpers/global-settings")

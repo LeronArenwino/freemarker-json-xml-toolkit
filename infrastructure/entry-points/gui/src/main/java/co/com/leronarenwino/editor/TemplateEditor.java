@@ -17,11 +17,14 @@
 
 package co.com.leronarenwino.editor;
 
+import co.com.leronarenwino.FreemarkerProcessor;
 import co.com.leronarenwino.TemplateValidator;
 import co.com.leronarenwino.settings.Settings;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
+import utils.PropertiesManager;
+import utils.SettingsSingleton;
 
 import javax.swing.*;
 import java.awt.*;
@@ -78,7 +81,17 @@ public class TemplateEditor extends JFrame {
     private JButton formatJsonButton;
     private JButton clearOutputButton;
 
+    private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
+
+
     public TemplateEditor() {
+
+        SettingsSingleton.setSettingsFromProperties(
+                PropertiesManager.loadProperties(
+                        "freemarker.properties",
+                        SettingsSingleton.defaultFreemarkerProperties()
+                )
+        );
 
         // Initialize components
         initComponents();
@@ -298,7 +311,7 @@ public class TemplateEditor extends JFrame {
         String templateContent = templateInputTextArea.getText();
         try {
             Map<String, Object> dataModel = getDataModelFromInput();
-            String output = TemplateValidator.processTemplate(templateContent, dataModel);
+            String output = templateValidator.processTemplate(templateContent, dataModel);
             outputJsonTextArea.setText(output);
         } catch (Exception ex) {
             outputJsonTextArea.setText("Error processing template: " + ex.getMessage());

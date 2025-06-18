@@ -19,6 +19,9 @@ package co.com.leronarenwino.config;
 
 import freemarker.template.Configuration;
 import freemarker.template.TemplateExceptionHandler;
+import utils.SettingsSingleton;
+
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class FreemarkerConfigProvider {
@@ -31,7 +34,11 @@ public class FreemarkerConfigProvider {
         configuration.setLogTemplateExceptions(false);
         configuration.setWrapUncheckedExceptions(true);
         configuration.setFallbackOnNullLoopVariable(false);
-        configuration.setSQLDateAndTimeTimeZone(TimeZone.getDefault());
+
+        // Apply settings from SettingsSingleton
+        configuration.setLocale(Locale.forLanguageTag(SettingsSingleton.getLocale().replace('_', '-')));
+        configuration.setSQLDateAndTimeTimeZone(TimeZone.getTimeZone(SettingsSingleton.getTimeZone()));
+
         return configuration;
     }
 
