@@ -4,7 +4,7 @@ pluginManagement {
     }
 }
 
-rootProject.name = 'template-tool'
+rootProject.name = 'freemarker-json-toolkit'
 
 include 'app-service'
 project(':app-service').projectDir = file("application/app-service")
