@@ -57,19 +57,19 @@ public class TemplateEditor extends JFrame {
 
     // Components for template input
     private RSyntaxTextArea templateInputTextArea;
-    private JScrollPane templateInputScrollPane;
+    private RTextScrollPane templateInputScrollPane;
 
     // Components for data input
     private RSyntaxTextArea dataInputTextArea;
-    private JScrollPane dataInputScrollPane;
+    private RTextScrollPane dataInputScrollPane;
 
     // Components for expected fields
     private RSyntaxTextArea expectedFieldsTextArea;
-    private JScrollPane expectedFieldsScrollPane;
+    private RTextScrollPane expectedFieldsScrollPane;
 
     // Components for output/result area
     private RSyntaxTextArea outputJsonTextArea;
-    private JScrollPane outputJsonScrollPane;
+    private RTextScrollPane outputJsonScrollPane;
 
     // Caret position labels
     private JLabel templatePositionLabel;
@@ -80,6 +80,9 @@ public class TemplateEditor extends JFrame {
     private JButton processTemplateButton;
     private JButton formatJsonButton;
     private JButton clearOutputButton;
+
+    // Color for caret
+    private Color caretColor;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -101,6 +104,9 @@ public class TemplateEditor extends JFrame {
 
         // Add components
         addComponents();
+
+        // Paint components
+        paintComponents();
 
     }
 
@@ -130,27 +136,18 @@ public class TemplateEditor extends JFrame {
 
         // Template input
         templateInputTextArea = new RSyntaxTextArea(10, 40);
-        templateInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
-        templateInputTextArea.setCodeFoldingEnabled(true);
         templateInputScrollPane = new RTextScrollPane(templateInputTextArea, true);
 
         // Data input
         dataInputTextArea = new RSyntaxTextArea(12, 40);
-        dataInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
-        dataInputTextArea.setCodeFoldingEnabled(true);
         dataInputScrollPane = new RTextScrollPane(dataInputTextArea, true);
 
-        // Right panel options
-        // (You can add more fields as needed)
-        // Example for validation area
-        expectedFieldsTextArea = new RSyntaxTextArea(6, 40);
-        expectedFieldsTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
-        expectedFieldsScrollPane = new RTextScrollPane(expectedFieldsTextArea, true);
+        // Expected fields input
+        expectedFieldsTextArea = new RSyntaxTextArea(1, 40);
+        expectedFieldsScrollPane = new RTextScrollPane(expectedFieldsTextArea, false);
 
         // Output/result area
-        outputJsonTextArea = new RSyntaxTextArea(8, 80);
-        outputJsonTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
-        outputJsonTextArea.setCodeFoldingEnabled(false);
+        outputJsonTextArea = new RSyntaxTextArea(12, 80);
         outputJsonScrollPane = new RTextScrollPane(outputJsonTextArea, true);
 
         // Validation result label
@@ -167,6 +164,8 @@ public class TemplateEditor extends JFrame {
         dataPositionLabel = new JLabel("Line: 1  Column: 1");
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
 
+        caretColor = Color.WHITE;
+
     }
 
     public void setComponents() {
@@ -179,8 +178,11 @@ public class TemplateEditor extends JFrame {
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 
         // Template input text area setup
+        templateInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
+        templateInputTextArea.setCodeFoldingEnabled(true);
         templateInputTextArea.setLineWrap(false);
         templateInputTextArea.setWrapStyleWord(false);
+        templateInputTextArea.setHighlightCurrentLine(false);
         templateInputScrollPane.setBorder(
                 BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.GRAY, 1, true),
@@ -189,8 +191,11 @@ public class TemplateEditor extends JFrame {
         );
 
         // Data input text area setup
+        dataInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        dataInputTextArea.setCodeFoldingEnabled(true);
         dataInputTextArea.setLineWrap(false);
         dataInputTextArea.setWrapStyleWord(false);
+        dataInputTextArea.setHighlightCurrentLine(false);
         dataInputScrollPane.setBorder(
                 BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.GRAY, 1, true),
@@ -199,19 +204,29 @@ public class TemplateEditor extends JFrame {
         );
 
         // Expected fields text area setup
-        expectedFieldsTextArea.setLineWrap(true);
-        expectedFieldsTextArea.setWrapStyleWord(true);
+        expectedFieldsTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
+        expectedFieldsTextArea.setLineWrap(false);
+        expectedFieldsTextArea.setCodeFoldingEnabled(true);
+        expectedFieldsTextArea.setLineWrap(false);
+        expectedFieldsTextArea.setWrapStyleWord(false);
+        expectedFieldsTextArea.setHighlightCurrentLine(false);
         expectedFieldsScrollPane.setBorder(
                 BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.GRAY, 1, true),
                         "Expected fields"
                 )
         );
+        expectedFieldsScrollPane.setFoldIndicatorEnabled(false);
+        expectedFieldsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        expectedFieldsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
 
         // Output JSON text area setup
+        outputJsonTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
+        outputJsonTextArea.setCodeFoldingEnabled(false);
         outputJsonTextArea.setEditable(false);
         outputJsonTextArea.setLineWrap(true);
         outputJsonTextArea.setWrapStyleWord(true);
+        outputJsonTextArea.setHighlightCurrentLine(false);
         outputJsonScrollPane.setBorder(
                 BorderFactory.createTitledBorder(
                         BorderFactory.createLineBorder(Color.GRAY, 1, true),
@@ -223,10 +238,9 @@ public class TemplateEditor extends JFrame {
         validationResultLabel.setForeground(Color.GRAY);
         validationResultLabel.setVerticalAlignment(SwingConstants.CENTER);
         validationResultLabel.setHorizontalAlignment(SwingConstants.CENTER);
-        validationResultLabel.setFont(new Font("SansSerif", Font.BOLD, 12));
 
         // Validation panel setup
-        validationPanel.setLayout(new FlowLayout(FlowLayout.RIGHT));
+        validationPanel.setLayout(new BoxLayout(validationPanel, BoxLayout.X_AXIS));
 
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
@@ -260,13 +274,14 @@ public class TemplateEditor extends JFrame {
         rightDataPositionBox.add(Box.createHorizontalGlue());
         rightDataPositionBox.add(templatePositionLabel);
         rightPanel.add(rightDataPositionBox);
-        rightPanel.add(expectedFieldsScrollPane);
 
         // Columns addition
         columnsPanel.add(leftPanel);
         columnsPanel.add(rightPanel);
 
         // Validation panel addition
+        validationPanel.add(expectedFieldsScrollPane);
+        validationPanel.add(Box.createHorizontalStrut(10));
         validationPanel.add(validationResultLabel);
         validationPanel.add(Box.createHorizontalStrut(10));
         validationPanel.add(validateFieldsButton);
@@ -306,6 +321,98 @@ public class TemplateEditor extends JFrame {
 
     }
 
+    // Java
+    public void paintComponents() {
+        Color darkBg = new Color(40, 44, 52);
+        Color darkFg = new Color(187, 187, 187);
+        Color buttonBg = new Color(60, 63, 65);
+        Color buttonFg = new Color(200, 200, 200);
+        Color scrollBarTrack = new Color(60, 63, 65);
+
+        // Panels
+        setPanelColors(darkBg);
+
+        // Text areas
+        setTextAreaColors(templateInputTextArea, darkBg, darkFg);
+        setTextAreaColors(dataInputTextArea, darkBg, darkFg);
+        setTextAreaColors(outputJsonTextArea, darkBg, darkFg);
+        setTextAreaColors(expectedFieldsTextArea, darkBg, darkFg);
+
+        // Labels
+        setLabelColors(darkFg);
+
+        // Buttons
+        customizeButton(processTemplateButton, buttonBg, buttonFg);
+        customizeButton(formatJsonButton, buttonBg, buttonFg);
+        customizeButton(clearOutputButton, buttonBg, buttonFg);
+        customizeButton(validateFieldsButton, buttonBg, buttonFg);
+
+        // Scroll panes
+        customizeRTextScrollPane(templateInputScrollPane, darkBg, darkFg, scrollBarTrack, "Template");
+        customizeRTextScrollPane(dataInputScrollPane, darkBg, darkFg, scrollBarTrack, "Data Model");
+        customizeRTextScrollPane(expectedFieldsScrollPane, darkBg, darkFg, scrollBarTrack, "Expected fields");
+        customizeRTextScrollPane(outputJsonScrollPane, darkBg, darkFg, scrollBarTrack, "Rendered Result");
+
+        templateInputTextArea.setCaretColor(caretColor);
+        dataInputTextArea.setCaretColor(caretColor);
+        outputJsonTextArea.setCaretColor(caretColor);
+        expectedFieldsTextArea.setCaretColor(caretColor);
+
+    }
+
+    private void setPanelColors(Color bg) {
+        mainPanel.setBackground(bg);
+        columnsPanel.setBackground(bg);
+        leftPanel.setBackground(bg);
+        rightPanel.setBackground(bg);
+        bottomPanel.setBackground(bg);
+        validationPanel.setBackground(bg);
+        buttonPanel.setBackground(bg);
+        centerButtonsPanel.setBackground(bg);
+    }
+
+    private void setTextAreaColors(RSyntaxTextArea area, Color bg, Color fg) {
+        area.setBackground(bg);
+        area.setForeground(fg);
+    }
+
+    private void setLabelColors(Color fg) {
+        validationResultLabel.setForeground(fg);
+        templatePositionLabel.setForeground(fg);
+        dataPositionLabel.setForeground(fg);
+        outputPositionLabel.setForeground(fg);
+    }
+
+    private void customizeButton(JButton button, Color bg, Color fg) {
+        button.setContentAreaFilled(false);
+        button.setOpaque(true);
+        button.setBackground(bg);
+        button.setForeground(fg);
+        button.setFocusPainted(false);
+    }
+
+
+
+    private void customizeRTextScrollPane(RTextScrollPane scrollPane, Color bg, Color fg, Color borderColor, String title) {
+        scrollPane.getViewport().setBackground(bg);
+        scrollPane.setBackground(bg);
+        scrollPane.setForeground(fg);
+
+        scrollPane.setBorder(
+                BorderFactory.createTitledBorder(
+                        BorderFactory.createLineBorder(borderColor),
+                        title, 0, 0, null, fg
+                )
+        );
+
+
+        // Personalización del gutter (número de líneas)
+        org.fife.ui.rtextarea.Gutter gutter = scrollPane.getGutter();
+        gutter.setBackground(bg);
+        gutter.setBorderColor(borderColor);
+        gutter.setLineNumberColor(fg);
+        gutter.setLineNumberFont(new Font("Consolas", Font.PLAIN, 12)); // Puedes cambiarlo
+    }
 
     private void processTemplateOutput() {
         String templateContent = templateInputTextArea.getText();
