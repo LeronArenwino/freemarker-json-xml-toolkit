@@ -18,6 +18,8 @@
 package co.com.leronarenwino;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +28,7 @@ import java.util.Map;
 public class TemplateValidator {
 
     private final TemplateProcessor templateProcessor;
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     public TemplateValidator(TemplateProcessor templateProcessor) {
         this.templateProcessor = templateProcessor;
@@ -36,9 +39,8 @@ public class TemplateValidator {
     }
 
     public static List<String> validateFieldsPresent(String jsonOutput, String[] expectedFields) throws Exception {
-        List<String> missing = new ArrayList<>();
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-        com.fasterxml.jackson.databind.JsonNode jsonNode = mapper.readTree(jsonOutput);
+        List<String> missing = new ArrayList<>(expectedFields.length);
+        JsonNode jsonNode = MAPPER.readTree(jsonOutput);
         for (String field : expectedFields) {
             if (!field.isEmpty() && !jsonNode.has(field)) {
                 missing.add(field);
@@ -48,31 +50,26 @@ public class TemplateValidator {
     }
 
     public static Map<String, Object> parseJsonToDataModel(String json) throws Exception {
-        ObjectMapper mapper = new ObjectMapper();
-        return mapper.readValue(json, new com.fasterxml.jackson.core.type.TypeReference<>() {
+        return MAPPER.readValue(json, new TypeReference<>() {
         });
     }
 
     public static String formatFlexibleJson(String input) {
-        ObjectMapper mapper = new ObjectMapper();
-
         try {
-            Object json = mapper.readValue(input, Object.class);
-            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+            Object json = MAPPER.readValue(input, Object.class);
+            return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
         } catch (Exception e1) {
             try {
-                if (input.trim().startsWith("{") && input.contains("\\\"") && !input.trim().startsWith("\"")) {
-                    input = "\"" + input + "\"";
+                String toParse = input;
+                if (toParse.trim().startsWith("{") && toParse.contains("\\\"") && !toParse.trim().startsWith("\"")) {
+                    toParse = "\"" + toParse + "\"";
                 }
-
-                String unescaped = mapper.readValue(input, String.class);
-                Object json = mapper.readValue(unescaped, Object.class);
-
-                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+                String unescaped = MAPPER.readValue(toParse, String.class);
+                Object json = MAPPER.readValue(unescaped, Object.class);
+                return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
             } catch (Exception e2) {
                 throw new IllegalArgumentException("El JSON es inválido:\n\n" + e2.getMessage());
             }
         }
     }
-
 }

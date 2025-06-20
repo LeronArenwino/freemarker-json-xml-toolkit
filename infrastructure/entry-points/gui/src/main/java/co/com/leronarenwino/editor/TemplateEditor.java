@@ -90,9 +90,9 @@ public class TemplateEditor extends JFrame {
     private Color caretColor;
 
     // Last formatted output and data input
-    private String lastFormattedResultOutput = null;
-    private String lastFormattedDataInput = null;
-    private String lastValidDataInput = null;
+    private String lastFormattedResultOutput;
+    private String lastFormattedDataInput;
+    private String lastValidDataInput;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -492,14 +492,9 @@ public class TemplateEditor extends JFrame {
         );
     }
 
-
     private void formatJsonIfNeeded(RSyntaxTextArea textArea, String lastFormatted, Consumer<String> updateLastFormatted) {
         String currentText = textArea.getText();
-
-        if (currentText.equals(lastFormatted)) {
-            return;
-        }
-
+        if (currentText.equals(lastFormatted)) return;
         try {
             String formatted = formatFlexibleJson(currentText);
             textArea.setText(formatted);
@@ -516,43 +511,14 @@ public class TemplateEditor extends JFrame {
             Consumer<String> updateFormatted) {
 
         String currentText = textArea.getText();
-
-        if (currentText.equals(lastFormatted)) {
-            return;
-        }
-
-        tryFormatJsonOrRestoreWithCopyDialog(
-                currentText,
-                textArea,
-                lastValid,
-                updateFormatted
-        );
-    }
-
-    private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
-        int caretPos = textArea.getCaretPosition();
-        try {
-            int line = textArea.getLineOfOffset(caretPos) + 1;
-            int column = caretPos - textArea.getLineStartOffset(line - 1) + 1;
-            label.setText("Line: " + line + "  Column: " + column);
-        } catch (Exception ex) {
-            label.setText("Line: ?, Column: ?");
-        }
-    }
-
-    private void tryFormatJsonOrRestoreWithCopyDialog(
-            String jsonText,
-            RSyntaxTextArea textArea,
-            String lastValid,
-            Consumer<String> onSuccess) {
+        if (currentText.equals(lastFormatted)) return;
 
         try {
-            String formatted = formatFlexibleJson(jsonText);
+            String formatted = formatFlexibleJson(currentText);
             textArea.setText(formatted);
-            onSuccess.accept(formatted);
+            updateFormatted.accept(formatted);
         } catch (Exception ex) {
-            String message = "El JSON es inválido:\n\n" + ex.getMessage();
-
+            String message = ex.getMessage();
             JTextArea errorTextArea = new JTextArea(message);
             errorTextArea.setEditable(false);
             errorTextArea.setWrapStyleWord(true);
@@ -576,6 +542,17 @@ public class TemplateEditor extends JFrame {
             if (choice == JOptionPane.YES_OPTION && lastValid != null) {
                 textArea.setText(lastValid);
             }
+        }
+    }
+
+    private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
+        int caretPos = textArea.getCaretPosition();
+        try {
+            int line = textArea.getLineOfOffset(caretPos) + 1;
+            int column = caretPos - textArea.getLineStartOffset(line - 1) + 1;
+            label.setText("Line: " + line + "  Column: " + column);
+        } catch (Exception ex) {
+            label.setText("Line: ?, Column: ?");
         }
     }
 
