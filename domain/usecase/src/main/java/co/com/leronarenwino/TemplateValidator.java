@@ -22,6 +22,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TemplateValidator {
 
@@ -53,15 +55,24 @@ public class TemplateValidator {
         });
     }
 
-    public static String formatJson(String json) throws Exception {
-        String processed = json;
-        // If the JSON contains \" and not valid, try to unescape
-        if (processed.contains("\\\"")) {
-            processed = processed.replace("\\\"", "\"");
+    public static String formatJson(String input) throws Exception {
+        String unescaped = input.replace("\\\"", "\"");
+
+        Pattern pattern = Pattern.compile("(\"[^\"]+\":)\"(\\{.*?})\"");
+        Matcher matcher = pattern.matcher(unescaped);
+        StringBuilder sb = new StringBuilder();
+
+        while (matcher.find()) {
+            String key = matcher.group(1);
+            String embedded = matcher.group(2);
+            String escapedJson = embedded.replace("\"", "\\\"");
+            matcher.appendReplacement(sb, key + "\"" + escapedJson + "\"");
         }
+
+        matcher.appendTail(sb);
+
         ObjectMapper mapper = new ObjectMapper();
-        Object obj = mapper.readValue(processed, Object.class);
+        Object obj = mapper.readValue(sb.toString(), Object.class);
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     }
-
 }
