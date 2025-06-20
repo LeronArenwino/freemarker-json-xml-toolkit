@@ -29,6 +29,9 @@ import utils.SettingsSingleton;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
+import java.util.function.Consumer;
+
+import static co.com.leronarenwino.TemplateValidator.formatJson;
 
 public class TemplateEditor extends JFrame {
 
@@ -47,13 +50,15 @@ public class TemplateEditor extends JFrame {
     private JPanel bottomPanel;
     private JPanel buttonPanel;
     private JPanel centerButtonsPanel;
-    private Box leftTemplatePositionBox;
     private Box rightDataPositionBox;
 
     // Panel for validation
     private JPanel validationPanel;
     private JButton validateFieldsButton;
     private JLabel validationResultLabel;
+
+    private JPanel dataBottomPanel;
+    private JButton validateDataModelButton;
 
     // Components for template input
     private RSyntaxTextArea templateInputTextArea;
@@ -83,6 +88,10 @@ public class TemplateEditor extends JFrame {
 
     // Color for caret
     private Color caretColor;
+
+    // Last formatted output and data input
+    private String lastFormattedResultOutput = null;
+    private String lastFormattedDataInput = null;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -126,13 +135,13 @@ public class TemplateEditor extends JFrame {
         leftPanel = new JPanel();
         rightPanel = new JPanel();
         bottomPanel = new JPanel(new BorderLayout(5, 5));
-        leftTemplatePositionBox = Box.createHorizontalBox();
         rightDataPositionBox = Box.createHorizontalBox();
 
         // Validation and button panels
         validationPanel = new JPanel();
         buttonPanel = new JPanel(new BorderLayout(5, 5));
         centerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
+        dataBottomPanel = new JPanel();
 
         // Template input
         templateInputTextArea = new RSyntaxTextArea(10, 40);
@@ -156,14 +165,16 @@ public class TemplateEditor extends JFrame {
         // Buttons
         processTemplateButton = new JButton("Evaluate Template");
         clearOutputButton = new JButton("Clear Output");
-        formatJsonButton = new JButton("Format JSON");
+        formatJsonButton = new JButton("Format to JSON");
         validateFieldsButton = new JButton("Validate Output Fields");
+        validateDataModelButton = new JButton("Format to JSON");
 
         // Caret position labels
         templatePositionLabel = new JLabel("Line: 1  Column: 1");
         dataPositionLabel = new JLabel("Line: 1  Column: 1");
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
 
+        // Caret color
         caretColor = Color.WHITE;
 
     }
@@ -174,7 +185,7 @@ public class TemplateEditor extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Left and right panels setup
-        leftPanel.setLayout(new BoxLayout(leftPanel, BoxLayout.Y_AXIS));
+        leftPanel.setLayout(new BorderLayout(5, 5));
         rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
 
         // Template input text area setup
@@ -241,6 +252,7 @@ public class TemplateEditor extends JFrame {
 
         // Validation panel setup
         validationPanel.setLayout(new BoxLayout(validationPanel, BoxLayout.X_AXIS));
+        dataBottomPanel.setLayout(new BoxLayout(dataBottomPanel, BoxLayout.X_AXIS));
 
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
@@ -263,11 +275,14 @@ public class TemplateEditor extends JFrame {
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
 
+        // Data bottom panel addition
+        dataBottomPanel.add(validateDataModelButton);
+        dataBottomPanel.add(Box.createHorizontalGlue());
+        dataBottomPanel.add(dataPositionLabel);
+
         // Left column addition
-        leftPanel.add(dataInputScrollPane);
-        leftTemplatePositionBox.add(Box.createHorizontalGlue());
-        leftTemplatePositionBox.add(dataPositionLabel);
-        leftPanel.add(leftTemplatePositionBox);
+        leftPanel.add(dataInputScrollPane, BorderLayout.CENTER);
+        leftPanel.add(dataBottomPanel, BorderLayout.SOUTH);
 
         // Right column addition
         rightPanel.add(templateInputScrollPane);
@@ -295,6 +310,9 @@ public class TemplateEditor extends JFrame {
             Settings settingsDialog = new Settings(this);
             settingsDialog.setVisible(true);
         });
+
+        // Button actions
+        validateDataModelButton.addActionListener(e -> formatDataInputJson());
         formatJsonButton.addActionListener(e -> formatJsonOutput());
         processTemplateButton.addActionListener(e -> processTemplateOutput());
         clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
@@ -306,7 +324,7 @@ public class TemplateEditor extends JFrame {
         centerButtonsPanel.add(clearOutputButton);
 
         // Button panel addition
-        buttonPanel.add(centerButtonsPanel, BorderLayout.CENTER);
+        buttonPanel.add(centerButtonsPanel, BorderLayout.WEST);
         buttonPanel.add(outputPositionLabel, BorderLayout.EAST);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
@@ -346,6 +364,7 @@ public class TemplateEditor extends JFrame {
         customizeButton(formatJsonButton, buttonBg, buttonFg);
         customizeButton(clearOutputButton, buttonBg, buttonFg);
         customizeButton(validateFieldsButton, buttonBg, buttonFg);
+        customizeButton(validateDataModelButton, buttonBg, buttonFg);
 
         // Scroll panes
         customizeRTextScrollPane(templateInputScrollPane, darkBg, darkFg, scrollBarTrack, "Template");
@@ -353,6 +372,7 @@ public class TemplateEditor extends JFrame {
         customizeRTextScrollPane(expectedFieldsScrollPane, darkBg, darkFg, scrollBarTrack, "Expected fields");
         customizeRTextScrollPane(outputJsonScrollPane, darkBg, darkFg, scrollBarTrack, "Rendered Result");
 
+        // Caret color
         templateInputTextArea.setCaretColor(caretColor);
         dataInputTextArea.setCaretColor(caretColor);
         outputJsonTextArea.setCaretColor(caretColor);
@@ -369,6 +389,7 @@ public class TemplateEditor extends JFrame {
         validationPanel.setBackground(bg);
         buttonPanel.setBackground(bg);
         centerButtonsPanel.setBackground(bg);
+        dataBottomPanel.setBackground(bg);
     }
 
     private void setTextAreaColors(RSyntaxTextArea area, Color bg, Color fg) {
@@ -392,7 +413,6 @@ public class TemplateEditor extends JFrame {
     }
 
 
-
     private void customizeRTextScrollPane(RTextScrollPane scrollPane, Color bg, Color fg, Color borderColor, String title) {
         scrollPane.getViewport().setBackground(bg);
         scrollPane.setBackground(bg);
@@ -405,8 +425,6 @@ public class TemplateEditor extends JFrame {
                 )
         );
 
-
-        // Personalización del gutter (número de líneas)
         org.fife.ui.rtextarea.Gutter gutter = scrollPane.getGutter();
         gutter.setBackground(bg);
         gutter.setBorderColor(borderColor);
@@ -458,13 +476,27 @@ public class TemplateEditor extends JFrame {
     }
 
     private void formatJsonOutput() {
-        String text = outputJsonTextArea.getText();
-        if (text.trim().isEmpty()) return;
+        formatJsonIfNeeded("Format JSON Error", outputJsonTextArea, lastFormattedResultOutput, formatted -> lastFormattedResultOutput = formatted);
+    }
+
+    private void formatDataInputJson() {
+        formatJsonIfNeeded("Data Model Error", dataInputTextArea, lastFormattedDataInput, formatted -> lastFormattedDataInput = formatted);
+    }
+
+
+    private void formatJsonIfNeeded(String title, RSyntaxTextArea textArea, String lastFormatted, Consumer<String> updateLastFormatted) {
+        String currentText = textArea.getText();
+
+        if (currentText.equals(lastFormatted)) {
+            return;
+        }
+
         try {
-            String pretty = TemplateValidator.formatJson(text);
-            outputJsonTextArea.setText(pretty);
+            String formatted = formatJson(currentText);
+            textArea.setText(formatted);
+            updateLastFormatted.accept(formatted);
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Invalid JSON: " + ex.getMessage(), "Format Error", JOptionPane.ERROR_MESSAGE);
+            showCopyableErrorDialog(title, "Invalid JSON: " + ex.getMessage());
         }
     }
 
@@ -477,6 +509,18 @@ public class TemplateEditor extends JFrame {
         } catch (Exception ex) {
             label.setText("Line: ?, Column: ?");
         }
+    }
+
+    private void showCopyableErrorDialog(String title, String message) {
+        JTextArea textArea = new JTextArea(message);
+        textArea.setEditable(false);
+        textArea.setWrapStyleWord(true);
+        textArea.setLineWrap(true);
+
+        JScrollPane scrollPane = new JScrollPane(textArea);
+        scrollPane.setPreferredSize(new Dimension(600, 200));
+
+        JOptionPane.showMessageDialog(this, scrollPane, title, JOptionPane.ERROR_MESSAGE);
     }
 
 
