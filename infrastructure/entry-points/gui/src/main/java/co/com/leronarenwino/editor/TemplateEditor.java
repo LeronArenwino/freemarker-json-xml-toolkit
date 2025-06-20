@@ -31,7 +31,7 @@ import java.awt.*;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import static co.com.leronarenwino.TemplateValidator.formatJson;
+import static co.com.leronarenwino.TemplateValidator.formatFlexibleJson;
 
 public class TemplateEditor extends JFrame {
 
@@ -493,7 +493,6 @@ public class TemplateEditor extends JFrame {
     }
 
 
-
     private void formatJsonIfNeeded(RSyntaxTextArea textArea, String lastFormatted, Consumer<String> updateLastFormatted) {
         String currentText = textArea.getText();
 
@@ -502,7 +501,7 @@ public class TemplateEditor extends JFrame {
         }
 
         try {
-            String formatted = formatJson(currentText);
+            String formatted = formatFlexibleJson(currentText);
             textArea.setText(formatted);
             updateLastFormatted.accept(formatted);
         } catch (Exception ex) {
@@ -530,8 +529,6 @@ public class TemplateEditor extends JFrame {
         );
     }
 
-
-
     private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
         int caretPos = textArea.getCaretPosition();
         try {
@@ -550,7 +547,7 @@ public class TemplateEditor extends JFrame {
             Consumer<String> onSuccess) {
 
         try {
-            String formatted = formatJson(jsonText);
+            String formatted = formatFlexibleJson(jsonText);
             textArea.setText(formatted);
             onSuccess.accept(formatted);
         } catch (Exception ex) {

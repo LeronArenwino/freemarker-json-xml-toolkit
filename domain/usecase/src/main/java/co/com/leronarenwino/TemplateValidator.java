@@ -22,8 +22,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 public class TemplateValidator {
 
@@ -55,39 +53,25 @@ public class TemplateValidator {
         });
     }
 
-    public static String formatJson(String input) throws Exception {
-
-        if (isValidJson(input)) {
-            return input;
-        }
-
-        String unescaped = input.replace("\\\"", "\"");
-
-        Pattern pattern = Pattern.compile("(\"[^\"]+\":)\"(\\{.*?})\"");
-        Matcher matcher = pattern.matcher(unescaped);
-        StringBuilder sb = new StringBuilder();
-
-        while (matcher.find()) {
-            String key = matcher.group(1);
-            String embedded = matcher.group(2);
-            String escapedJson = embedded.replace("\"", "\\\"");
-            matcher.appendReplacement(sb, key + "\"" + escapedJson + "\"");
-        }
-
-        matcher.appendTail(sb);
-
+    public static String formatFlexibleJson(String input) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-        Object obj = mapper.readValue(sb.toString(), Object.class);
-        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
-    }
 
-    public static boolean isValidJson(String json) {
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            mapper.readTree(json);
-            return true;
-        } catch (Exception e) {
-            return false;
+            Object json = mapper.readValue(input, Object.class);
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+        } catch (Exception e1) {
+            try {
+                if (input.trim().startsWith("{") && input.contains("\\\"") && !input.trim().startsWith("\"")) {
+                    input = "\"" + input + "\"";
+                }
+
+                String unescaped = mapper.readValue(input, String.class);
+                Object json = mapper.readValue(unescaped, Object.class);
+
+                return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+            } catch (Exception e2) {
+                throw new IllegalArgumentException("El JSON es inválido:\n\n" + e2.getMessage());
+            }
         }
     }
 
