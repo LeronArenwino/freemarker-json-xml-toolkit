@@ -17,9 +17,9 @@
 
 package co.com.leronarenwino;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,7 +57,8 @@ public class TemplateValidator {
     public static String formatFlexibleJson(String input) {
         try {
             Object json = MAPPER.readValue(input, Object.class);
-            return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+            String pretty = MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+            return pretty.replace("\r\n", "\n");
         } catch (Exception e1) {
             try {
                 String toParse = input;
@@ -66,7 +67,8 @@ public class TemplateValidator {
                 }
                 String unescaped = MAPPER.readValue(toParse, String.class);
                 Object json = MAPPER.readValue(unescaped, Object.class);
-                return MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+                String pretty = MAPPER.writerWithDefaultPrettyPrinter().writeValueAsString(json);
+                return pretty.replace("\r\n", "\n");
             } catch (Exception e2) {
                 throw new IllegalArgumentException("El JSON es inválido:\n\n" + e2.getMessage());
             }

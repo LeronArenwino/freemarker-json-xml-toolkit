@@ -340,7 +340,6 @@ public class TemplateEditor extends JFrame {
 
     }
 
-    // Java
     public void paintComponents() {
         Color darkBg = new Color(40, 44, 52);
         Color darkFg = new Color(187, 187, 187);
