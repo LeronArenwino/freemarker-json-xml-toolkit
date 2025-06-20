@@ -56,6 +56,11 @@ public class TemplateValidator {
     }
 
     public static String formatJson(String input) throws Exception {
+
+        if (isValidJson(input)) {
+            return input;
+        }
+
         String unescaped = input.replace("\\\"", "\"");
 
         Pattern pattern = Pattern.compile("(\"[^\"]+\":)\"(\\{.*?})\"");
@@ -75,4 +80,15 @@ public class TemplateValidator {
         Object obj = mapper.readValue(sb.toString(), Object.class);
         return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(obj);
     }
+
+    public static boolean isValidJson(String json) {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.readTree(json);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
 }

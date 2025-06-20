@@ -92,6 +92,7 @@ public class TemplateEditor extends JFrame {
     // Last formatted output and data input
     private String lastFormattedResultOutput = null;
     private String lastFormattedDataInput = null;
+    private String lastValidDataInput = null;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -476,15 +477,24 @@ public class TemplateEditor extends JFrame {
     }
 
     private void formatJsonOutput() {
-        formatJsonIfNeeded("Format JSON Error", outputJsonTextArea, lastFormattedResultOutput, formatted -> lastFormattedResultOutput = formatted);
+        formatJsonIfNeeded(outputJsonTextArea, lastFormattedResultOutput, formatted -> lastFormattedResultOutput = formatted);
     }
 
     private void formatDataInputJson() {
-        formatJsonIfNeeded("Data Model Error", dataInputTextArea, lastFormattedDataInput, formatted -> lastFormattedDataInput = formatted);
+        formatJsonSafely(
+                dataInputTextArea,
+                lastFormattedDataInput,
+                lastValidDataInput,
+                formatted -> {
+                    lastFormattedDataInput = formatted;
+                    lastValidDataInput = formatted;
+                }
+        );
     }
 
 
-    private void formatJsonIfNeeded(String title, RSyntaxTextArea textArea, String lastFormatted, Consumer<String> updateLastFormatted) {
+
+    private void formatJsonIfNeeded(RSyntaxTextArea textArea, String lastFormatted, Consumer<String> updateLastFormatted) {
         String currentText = textArea.getText();
 
         if (currentText.equals(lastFormatted)) {
@@ -496,9 +506,31 @@ public class TemplateEditor extends JFrame {
             textArea.setText(formatted);
             updateLastFormatted.accept(formatted);
         } catch (Exception ex) {
-            showCopyableErrorDialog(title, "Invalid JSON: " + ex.getMessage());
+            showCopyableErrorDialog("Invalid JSON: " + ex.getMessage());
         }
     }
+
+    private void formatJsonSafely(
+            RSyntaxTextArea textArea,
+            String lastFormatted,
+            String lastValid,
+            Consumer<String> updateFormatted) {
+
+        String currentText = textArea.getText();
+
+        if (currentText.equals(lastFormatted)) {
+            return;
+        }
+
+        tryFormatJsonOrRestoreWithCopyDialog(
+                currentText,
+                textArea,
+                lastValid,
+                updateFormatted
+        );
+    }
+
+
 
     private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
         int caretPos = textArea.getCaretPosition();
@@ -511,7 +543,46 @@ public class TemplateEditor extends JFrame {
         }
     }
 
-    private void showCopyableErrorDialog(String title, String message) {
+    private void tryFormatJsonOrRestoreWithCopyDialog(
+            String jsonText,
+            RSyntaxTextArea textArea,
+            String lastValid,
+            Consumer<String> onSuccess) {
+
+        try {
+            String formatted = formatJson(jsonText);
+            textArea.setText(formatted);
+            onSuccess.accept(formatted);
+        } catch (Exception ex) {
+            String message = "El JSON es inválido:\n\n" + ex.getMessage();
+
+            JTextArea errorTextArea = new JTextArea(message);
+            errorTextArea.setEditable(false);
+            errorTextArea.setWrapStyleWord(true);
+            errorTextArea.setLineWrap(true);
+
+            JScrollPane scrollPane = new JScrollPane(errorTextArea);
+            scrollPane.setPreferredSize(new Dimension(600, 200));
+
+            Object[] options = {"Volver al último válido", "Cerrar"};
+            int choice = JOptionPane.showOptionDialog(
+                    this,
+                    scrollPane,
+                    "Data Model Error",
+                    JOptionPane.YES_NO_OPTION,
+                    JOptionPane.ERROR_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+            );
+
+            if (choice == JOptionPane.YES_OPTION && lastValid != null) {
+                textArea.setText(lastValid);
+            }
+        }
+    }
+
+    private void showCopyableErrorDialog(String message) {
         JTextArea textArea = new JTextArea(message);
         textArea.setEditable(false);
         textArea.setWrapStyleWord(true);
@@ -520,7 +591,7 @@ public class TemplateEditor extends JFrame {
         JScrollPane scrollPane = new JScrollPane(textArea);
         scrollPane.setPreferredSize(new Dimension(600, 200));
 
-        JOptionPane.showMessageDialog(this, scrollPane, title, JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(this, scrollPane, "Format JSON Error", JOptionPane.ERROR_MESSAGE);
     }
 
 
