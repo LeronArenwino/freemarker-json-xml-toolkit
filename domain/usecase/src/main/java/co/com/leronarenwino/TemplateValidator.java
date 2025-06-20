@@ -53,7 +53,7 @@ public class TemplateValidator {
         });
     }
 
-    public static String formatFlexibleJson(String input) throws Exception {
+    public static String formatFlexibleJson(String input) {
         ObjectMapper mapper = new ObjectMapper();
 
         try {
