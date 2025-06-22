@@ -29,9 +29,8 @@ import utils.SettingsSingleton;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
-import java.util.function.Consumer;
 
-import static co.com.leronarenwino.TemplateValidator.formatFlexibleJson;
+import static co.com.leronarenwino.editor.TemplateUtils.*;
 
 public class TemplateEditor extends JFrame {
 
@@ -456,7 +455,7 @@ public class TemplateEditor extends JFrame {
         }
         String[] expectedFields = expectedFieldsText.split("\\s*,\\s*|\\s+");
         try {
-            java.util.List<String> missing = TemplateValidator.validateFieldsPresent(output, expectedFields);
+            java.util.List<String> missing = validateFields(output, expectedFields);
             if (missing.isEmpty()) {
                 validationResultLabel.setText("All expected fields are present.");
                 validationResultLabel.setForeground(new java.awt.Color(0, 128, 0));
@@ -472,15 +471,16 @@ public class TemplateEditor extends JFrame {
 
     private Map<String, Object> getDataModelFromInput() throws Exception {
         String json = dataInputTextArea.getText().trim();
-        return TemplateValidator.parseJsonToDataModel(json.isEmpty() ? "{}" : json);
+        return parseDataModel(json);
     }
 
     private void formatJsonOutput() {
-        formatJsonIfNeeded(outputJsonTextArea, lastFormattedResultOutput, formatted -> lastFormattedResultOutput = formatted);
+        TemplateUtils.formatJsonIfNeeded(outputJsonTextArea, lastFormattedResultOutput, formatted -> lastFormattedResultOutput = formatted);
     }
 
     private void formatDataInputJson() {
         formatJsonSafely(
+                this,
                 dataInputTextArea,
                 lastFormattedDataInput,
                 lastValidDataInput,
@@ -489,59 +489,6 @@ public class TemplateEditor extends JFrame {
                     lastValidDataInput = formatted;
                 }
         );
-    }
-
-    private void formatJsonIfNeeded(RSyntaxTextArea textArea, String lastFormatted, Consumer<String> updateLastFormatted) {
-        String currentText = textArea.getText();
-        if (currentText.equals(lastFormatted)) return;
-        try {
-            String formatted = formatFlexibleJson(currentText);
-            textArea.setText(formatted);
-            updateLastFormatted.accept(formatted);
-        } catch (Exception ex) {
-            showCopyableErrorDialog("Invalid JSON: " + ex.getMessage());
-        }
-    }
-
-    private void formatJsonSafely(
-            RSyntaxTextArea textArea,
-            String lastFormatted,
-            String lastValid,
-            Consumer<String> updateFormatted) {
-
-        String currentText = textArea.getText();
-        if (currentText.equals(lastFormatted)) return;
-
-        try {
-            String formatted = formatFlexibleJson(currentText);
-            textArea.setText(formatted);
-            updateFormatted.accept(formatted);
-        } catch (Exception ex) {
-            String message = ex.getMessage();
-            JTextArea errorTextArea = new JTextArea(message);
-            errorTextArea.setEditable(false);
-            errorTextArea.setWrapStyleWord(true);
-            errorTextArea.setLineWrap(true);
-
-            JScrollPane scrollPane = new JScrollPane(errorTextArea);
-            scrollPane.setPreferredSize(new Dimension(600, 200));
-
-            Object[] options = {"Volver al último válido", "Cerrar"};
-            int choice = JOptionPane.showOptionDialog(
-                    this,
-                    scrollPane,
-                    "Data Model Error",
-                    JOptionPane.YES_NO_OPTION,
-                    JOptionPane.ERROR_MESSAGE,
-                    null,
-                    options,
-                    options[0]
-            );
-
-            if (choice == JOptionPane.YES_OPTION && lastValid != null) {
-                textArea.setText(lastValid);
-            }
-        }
     }
 
     private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
@@ -553,18 +500,6 @@ public class TemplateEditor extends JFrame {
         } catch (Exception ex) {
             label.setText("Line: ?, Column: ?");
         }
-    }
-
-    private void showCopyableErrorDialog(String message) {
-        JTextArea textArea = new JTextArea(message);
-        textArea.setEditable(false);
-        textArea.setWrapStyleWord(true);
-        textArea.setLineWrap(true);
-
-        JScrollPane scrollPane = new JScrollPane(textArea);
-        scrollPane.setPreferredSize(new Dimension(600, 200));
-
-        JOptionPane.showMessageDialog(this, scrollPane, "Format JSON Error", JOptionPane.ERROR_MESSAGE);
     }
 
 
