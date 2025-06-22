@@ -85,9 +85,6 @@ public class TemplateEditor extends JFrame {
     private JButton formatJsonButton;
     private JButton clearOutputButton;
 
-    // Color for caret
-    private Color caretColor;
-
     // Last formatted output and data input
     private String lastFormattedResultOutput;
     private String lastFormattedDataInput;
@@ -173,9 +170,6 @@ public class TemplateEditor extends JFrame {
         templatePositionLabel = new JLabel("Line: 1  Column: 1");
         dataPositionLabel = new JLabel("Line: 1  Column: 1");
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
-
-        // Caret color
-        caretColor = Color.WHITE;
 
     }
 
@@ -340,96 +334,33 @@ public class TemplateEditor extends JFrame {
     }
 
     public void paintComponents() {
-        Color darkBg = new Color(40, 44, 52);
-        Color darkFg = new Color(187, 187, 187);
-        Color buttonBg = new Color(60, 63, 65);
-        Color buttonFg = new Color(200, 200, 200);
-        Color scrollBarTrack = new Color(60, 63, 65);
-
         // Panels
-        setPanelColors(darkBg);
+        UiConfig.setPanelColors(UiConfig.DARK_BG, mainPanel, columnsPanel, leftPanel, rightPanel, bottomPanel,
+                validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel);
 
         // Text areas
-        setTextAreaColors(templateInputTextArea, darkBg, darkFg);
-        setTextAreaColors(dataInputTextArea, darkBg, darkFg);
-        setTextAreaColors(outputJsonTextArea, darkBg, darkFg);
-        setTextAreaColors(expectedFieldsTextArea, darkBg, darkFg);
+        UiConfig.setTextAreaColors(UiConfig.DARK_BG, UiConfig.DARK_FG, templateInputTextArea, dataInputTextArea,
+                expectedFieldsTextArea, outputJsonTextArea);
 
         // Labels
-        setLabelColors(darkFg);
+        UiConfig.setLabelColors(UiConfig.DARK_FG, validationResultLabel, templatePositionLabel,
+                dataPositionLabel, outputPositionLabel);
 
         // Buttons
-        customizeButton(processTemplateButton, buttonBg, buttonFg);
-        customizeButton(formatJsonButton, buttonBg, buttonFg);
-        customizeButton(clearOutputButton, buttonBg, buttonFg);
-        customizeButton(validateFieldsButton, buttonBg, buttonFg);
-        customizeButton(validateDataModelButton, buttonBg, buttonFg);
+        UiConfig.styleButtons(UiConfig.BUTTON_BG, UiConfig.BUTTON_FG, processTemplateButton, formatJsonButton,
+                clearOutputButton, validateFieldsButton, validateDataModelButton);
 
         // Scroll panes
-        customizeRTextScrollPane(templateInputScrollPane, darkBg, darkFg, scrollBarTrack, "Template");
-        customizeRTextScrollPane(dataInputScrollPane, darkBg, darkFg, scrollBarTrack, "Data Model");
-        customizeRTextScrollPane(expectedFieldsScrollPane, darkBg, darkFg, scrollBarTrack, "Expected fields");
-        customizeRTextScrollPane(outputJsonScrollPane, darkBg, darkFg, scrollBarTrack, "Rendered Result");
-
-        // Caret color
-        templateInputTextArea.setCaretColor(caretColor);
-        dataInputTextArea.setCaretColor(caretColor);
-        outputJsonTextArea.setCaretColor(caretColor);
-        expectedFieldsTextArea.setCaretColor(caretColor);
-
-    }
-
-    private void setPanelColors(Color bg) {
-        mainPanel.setBackground(bg);
-        columnsPanel.setBackground(bg);
-        leftPanel.setBackground(bg);
-        rightPanel.setBackground(bg);
-        bottomPanel.setBackground(bg);
-        validationPanel.setBackground(bg);
-        buttonPanel.setBackground(bg);
-        centerButtonsPanel.setBackground(bg);
-        dataBottomPanel.setBackground(bg);
-    }
-
-    private void setTextAreaColors(RSyntaxTextArea area, Color bg, Color fg) {
-        area.setBackground(bg);
-        area.setForeground(fg);
-    }
-
-    private void setLabelColors(Color fg) {
-        validationResultLabel.setForeground(fg);
-        templatePositionLabel.setForeground(fg);
-        dataPositionLabel.setForeground(fg);
-        outputPositionLabel.setForeground(fg);
-    }
-
-    private void customizeButton(JButton button, Color bg, Color fg) {
-        button.setContentAreaFilled(false);
-        button.setOpaque(true);
-        button.setBackground(bg);
-        button.setForeground(fg);
-        button.setFocusPainted(false);
-    }
-
-
-    private void customizeRTextScrollPane(RTextScrollPane scrollPane, Color bg, Color fg, Color borderColor, String title) {
-        scrollPane.getViewport().setBackground(bg);
-        scrollPane.setBackground(bg);
-        scrollPane.setForeground(fg);
-
-        scrollPane.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(borderColor),
-                        title, 0, 0, null, fg
-                )
+        UiConfig.customizeRTextScrollPanes(
+                new String[]{"Template", "Data Model", "Expected fields", "Rendered Result"},
+                templateInputScrollPane, dataInputScrollPane, expectedFieldsScrollPane, outputJsonScrollPane
         );
 
-        org.fife.ui.rtextarea.Gutter gutter = scrollPane.getGutter();
-        gutter.setBackground(bg);
-        gutter.setBorderColor(borderColor);
-        gutter.setLineNumberColor(fg);
-        gutter.setLineNumberFont(new Font("Consolas", Font.PLAIN, 12)); // Puedes cambiarlo
+        // Caret color
+        UiConfig.setCaretColors(Color.WHITE, templateInputTextArea, dataInputTextArea, outputJsonTextArea, expectedFieldsTextArea);
+
     }
+
 
     private void processTemplateOutput() {
         String templateContent = templateInputTextArea.getText();
