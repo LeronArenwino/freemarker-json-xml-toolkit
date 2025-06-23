@@ -33,7 +33,20 @@ public class SettingsSingleton {
     private static String locale = DEFAULT_LOCALE;
     private static String timeZone = DEFAULT_TIME_ZONE;
 
-    private static String theme = "Dark";
+    public static final String APP_THEME = "theme";
+    private static final String DEFAULT_THEME = "Dark";
+
+    private static String theme = DEFAULT_THEME;
+
+
+    public static Properties defaultAppProperties() {
+        Properties properties = new Properties();
+        properties.setProperty(FREEMARKER_LOCALE, DEFAULT_LOCALE);
+        properties.setProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
+        properties.setProperty(APP_THEME, DEFAULT_THEME);
+        return properties;
+    }
+
 
     public static String getTheme() {
         return theme;
@@ -45,16 +58,10 @@ public class SettingsSingleton {
         }
     }
 
-    public static Properties defaultFreemarkerProperties() {
-        Properties properties = new Properties();
-        properties.setProperty(FREEMARKER_LOCALE, DEFAULT_LOCALE);
-        properties.setProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
-        return properties;
-    }
-
     public static void setSettingsFromProperties(Properties properties) {
         locale = properties.getProperty(FREEMARKER_LOCALE, DEFAULT_LOCALE);
         timeZone = properties.getProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
+        theme = properties.getProperty(APP_THEME, DEFAULT_THEME);
     }
 
     public static String getLocale() {

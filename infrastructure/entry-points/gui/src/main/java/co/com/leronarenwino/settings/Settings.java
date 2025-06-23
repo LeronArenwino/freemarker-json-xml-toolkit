@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.settings;
 
+import utils.PropertiesManager;
 import utils.SettingsSingleton;
 
 import javax.swing.*;
@@ -24,7 +25,11 @@ import java.awt.*;
 import java.util.Properties;
 import java.util.function.BiFunction;
 
+import static utils.SettingsSingleton.defaultAppProperties;
+
 public class Settings extends JDialog {
+
+    public static final String PROPERTIES_FILE = "config.properties";
 
     private JPanel mainPanel;
     private JTabbedPane tabbedPane;
@@ -41,6 +46,10 @@ public class Settings extends JDialog {
 
     private JPanel buttonPanel;
     private JButton closeButton;
+
+    private JButton saveButton;
+    private JButton loadButton;
+
 
     public Settings(JFrame parent) {
         super(parent, "Settings", true);
@@ -70,6 +79,8 @@ public class Settings extends JDialog {
         // Buttons
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         closeButton = new JButton("Close");
+        saveButton = new JButton("Save");
+        loadButton = new JButton("Load");
     }
 
     private void setComponents() {
@@ -82,7 +93,7 @@ public class Settings extends JDialog {
 
         // FreeMarker panel layout
         freemarkerPanel.setLayout(new BoxLayout(freemarkerPanel, BoxLayout.Y_AXIS));
-        Properties defaults = SettingsSingleton.defaultFreemarkerProperties();
+        Properties defaults = defaultAppProperties();
         localeCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
         timeZoneCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
         freemarkerPanel.add(createOption.apply("Locale:", localeCombo));
@@ -96,6 +107,11 @@ public class Settings extends JDialog {
 
         closeButton.addActionListener(e -> dispose());
         buttonPanel.add(closeButton);
+        buttonPanel.add(saveButton);
+        buttonPanel.add(loadButton);
+
+        saveButton.addActionListener(e -> saveSettings());
+        loadButton.addActionListener(e -> loadSettings());
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
@@ -107,6 +123,30 @@ public class Settings extends JDialog {
             SettingsSingleton.setTheme(selected);
             // You should implement a method to repaint the main UI with the new theme
         });
+    }
+
+    private void saveSettings() {
+        Properties props = new Properties();
+        props.setProperty(SettingsSingleton.FREEMARKER_LOCALE, (String) localeCombo.getSelectedItem());
+        props.setProperty(SettingsSingleton.FREEMARKER_TIME_ZONE, (String) timeZoneCombo.getSelectedItem());
+        props.setProperty(SettingsSingleton.APP_THEME, (String) themeCombo.getSelectedItem());
+        PropertiesManager.saveProperties(PROPERTIES_FILE, props);
+        JOptionPane.showMessageDialog(this, "Settings saved.");
+    }
+
+    private void loadSettings() {
+        Properties props = PropertiesManager.loadProperties(PROPERTIES_FILE, defaultAppProperties());
+
+        if (props.isEmpty()) {
+            props = defaultAppProperties();
+        }
+
+        localeCombo.setSelectedItem(props.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
+        timeZoneCombo.setSelectedItem(props.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
+        themeCombo.setSelectedItem(props.getProperty(SettingsSingleton.APP_THEME));
+        SettingsSingleton.setSettingsFromProperties(props);
+
+        JOptionPane.showMessageDialog(this, "Settings loaded.");
     }
 
     private static BiFunction<String, JComboBox<String>, JPanel> getOptionPanelCreator() {

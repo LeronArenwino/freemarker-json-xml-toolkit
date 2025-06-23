@@ -31,6 +31,8 @@ import java.awt.*;
 import java.util.Map;
 
 import static co.com.leronarenwino.editor.TemplateUtils.*;
+import static co.com.leronarenwino.settings.Settings.PROPERTIES_FILE;
+import static utils.SettingsSingleton.defaultAppProperties;
 
 public class TemplateEditor extends JFrame {
 
@@ -90,6 +92,13 @@ public class TemplateEditor extends JFrame {
     private String lastFormattedDataInput;
     private String lastValidDataInput;
 
+    private JPanel[] panels;
+    private RSyntaxTextArea[] textAreas;
+    private JLabel[] labels;
+    private JButton[] buttons;
+    private RTextScrollPane[] scrollPanes;
+    private String[] scrollPaneTitles;
+
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
 
@@ -97,8 +106,8 @@ public class TemplateEditor extends JFrame {
 
         SettingsSingleton.setSettingsFromProperties(
                 PropertiesManager.loadProperties(
-                        "freemarker.properties",
-                        SettingsSingleton.defaultFreemarkerProperties()
+                        PROPERTIES_FILE,
+                        defaultAppProperties()
                 )
         );
 
@@ -170,6 +179,14 @@ public class TemplateEditor extends JFrame {
         templatePositionLabel = new JLabel("Line: 1  Column: 1");
         dataPositionLabel = new JLabel("Line: 1  Column: 1");
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
+
+        panels = new JPanel[]{mainPanel, columnsPanel, leftPanel, rightPanel, bottomPanel,
+                validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel};
+        textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
+        labels = new JLabel[]{validationResultLabel, templatePositionLabel, dataPositionLabel, outputPositionLabel};
+        buttons = new JButton[]{processTemplateButton, formatJsonButton, clearOutputButton, validateFieldsButton, validateDataModelButton};
+        scrollPanes = new RTextScrollPane[]{templateInputScrollPane, dataInputScrollPane, expectedFieldsScrollPane, outputJsonScrollPane};
+        scrollPaneTitles = new String[]{"Template", "Data Model", "Expected fields", "Rendered Result"};
 
     }
 
@@ -334,30 +351,16 @@ public class TemplateEditor extends JFrame {
     }
 
     public void paintComponents() {
-        // Panels
-        UiConfig.setPanelColors(UiConfig.DARK_BG, mainPanel, columnsPanel, leftPanel, rightPanel, bottomPanel,
-                validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel);
 
-        // Text areas
-        UiConfig.setTextAreaColors(UiConfig.DARK_BG, UiConfig.DARK_FG, templateInputTextArea, dataInputTextArea,
-                expectedFieldsTextArea, outputJsonTextArea);
-
-        // Labels
-        UiConfig.setLabelColors(UiConfig.DARK_FG, validationResultLabel, templatePositionLabel,
-                dataPositionLabel, outputPositionLabel);
-
-        // Buttons
-        UiConfig.styleButtons(UiConfig.BUTTON_BG, UiConfig.BUTTON_FG, processTemplateButton, formatJsonButton,
-                clearOutputButton, validateFieldsButton, validateDataModelButton);
-
-        // Scroll panes
-        UiConfig.customizeRTextScrollPanes(
-                new String[]{"Template", "Data Model", "Expected fields", "Rendered Result"},
-                templateInputScrollPane, dataInputScrollPane, expectedFieldsScrollPane, outputJsonScrollPane
-        );
-
-        // Caret color
-        UiConfig.setCaretColors(Color.WHITE, templateInputTextArea, dataInputTextArea, outputJsonTextArea, expectedFieldsTextArea);
+        // Apply theme and styles
+        UiConfig.applyTheme(SettingsSingleton.getTheme());
+        UiConfig.setPanelColors(UiConfig.CURRENT_BG, panels);
+        UiConfig.setTextAreaColors(UiConfig.CURRENT_BG, UiConfig.CURRENT_FG, textAreas);
+        UiConfig.setLabelColors(UiConfig.CURRENT_FG, labels);
+        UiConfig.styleButtons(UiConfig.CURRENT_BUTTON_BG, UiConfig.CURRENT_BUTTON_FG, buttons);
+        UiConfig.customizeRTextScrollPanes(scrollPaneTitles, scrollPanes);
+        UiConfig.setCaretColors(UiConfig.CURRENT_FG, textAreas);
+        UiConfig.setScrollBarColors(UiConfig.CURRENT_SCROLLBAR_TRACK, scrollPanes);
 
     }
 
