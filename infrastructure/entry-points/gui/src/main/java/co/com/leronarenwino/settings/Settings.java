@@ -45,10 +45,10 @@ public class Settings extends JDialog {
     private JComboBox<String> timeZoneCombo;
 
     private JPanel buttonPanel;
-    private JButton closeButton;
+    private JButton cancelButton;
 
-    private JButton saveButton;
-    private JButton loadButton;
+    private JButton okButton;
+    private JButton applyButton;
 
 
     public Settings(JFrame parent) {
@@ -60,6 +60,7 @@ public class Settings extends JDialog {
         initComponents();
         setComponents();
         addComponents();
+        loadSettings();
     }
 
     private void initComponents() {
@@ -78,9 +79,9 @@ public class Settings extends JDialog {
 
         // Buttons
         buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        closeButton = new JButton("Close");
-        saveButton = new JButton("Save");
-        loadButton = new JButton("Load");
+        okButton = new JButton("OK");
+        cancelButton = new JButton("Cancel");
+        applyButton = new JButton("Apply");
     }
 
     private void setComponents() {
@@ -105,23 +106,33 @@ public class Settings extends JDialog {
         tabbedPane.addTab("Editor", editorPanel);
         tabbedPane.addTab("FreeMarker", freemarkerPanel);
 
-        closeButton.addActionListener(e -> dispose());
-        buttonPanel.add(closeButton);
-        buttonPanel.add(saveButton);
-        buttonPanel.add(loadButton);
+        cancelButton.addActionListener(e -> dispose());
 
-        saveButton.addActionListener(e -> saveSettings());
-        loadButton.addActionListener(e -> loadSettings());
+        buttonPanel.add(okButton);
+        buttonPanel.add(Box.createHorizontalStrut(10));
+        buttonPanel.add(cancelButton);
+        buttonPanel.add(Box.createHorizontalStrut(10));
+        buttonPanel.add(applyButton);
+
+        okButton.addActionListener(e -> {
+            saveSettings();
+            applyThemeToParent();
+            dispose();
+        });
+        applyButton.addActionListener(e -> {
+            saveSettings();
+            applyThemeToParent();
+        });
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
-        // Theme change listener (example)
+        // Set default theme
         themeCombo.addActionListener(e -> {
             String selected = (String) themeCombo.getSelectedItem();
             // Save theme to settings and trigger UI update
             SettingsSingleton.setTheme(selected);
-            // You should implement a method to repaint the main UI with the new theme
+            applyThemeToParent();
         });
     }
 
@@ -131,7 +142,7 @@ public class Settings extends JDialog {
         props.setProperty(SettingsSingleton.FREEMARKER_TIME_ZONE, (String) timeZoneCombo.getSelectedItem());
         props.setProperty(SettingsSingleton.APP_THEME, (String) themeCombo.getSelectedItem());
         PropertiesManager.saveProperties(PROPERTIES_FILE, props);
-        JOptionPane.showMessageDialog(this, "Settings saved.");
+
     }
 
     private void loadSettings() {
@@ -146,7 +157,13 @@ public class Settings extends JDialog {
         themeCombo.setSelectedItem(props.getProperty(SettingsSingleton.APP_THEME));
         SettingsSingleton.setSettingsFromProperties(props);
 
-        JOptionPane.showMessageDialog(this, "Settings loaded.");
+    }
+
+    private void applyThemeToParent() {
+        if (getParent() instanceof co.com.leronarenwino.editor.TemplateEditor editor) {
+            editor.paintComponents();
+            editor.repaint();
+        }
     }
 
     private static BiFunction<String, JComboBox<String>, JPanel> getOptionPanelCreator() {

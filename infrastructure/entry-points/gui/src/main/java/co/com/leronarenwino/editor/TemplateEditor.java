@@ -33,6 +33,7 @@ import java.util.Map;
 import static co.com.leronarenwino.editor.TemplateUtils.*;
 import static co.com.leronarenwino.settings.Settings.PROPERTIES_FILE;
 import static utils.SettingsSingleton.defaultAppProperties;
+import static utils.SettingsSingleton.setSettingsFromProperties;
 
 public class TemplateEditor extends JFrame {
 
@@ -104,7 +105,8 @@ public class TemplateEditor extends JFrame {
 
     public TemplateEditor() {
 
-        SettingsSingleton.setSettingsFromProperties(
+        // Set default properties from file or create new ones
+        setSettingsFromProperties(
                 PropertiesManager.loadProperties(
                         PROPERTIES_FILE,
                         defaultAppProperties()
@@ -180,6 +182,7 @@ public class TemplateEditor extends JFrame {
         dataPositionLabel = new JLabel("Line: 1  Column: 1");
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
 
+        // Initialize arrays for easy access
         panels = new JPanel[]{mainPanel, columnsPanel, leftPanel, rightPanel, bottomPanel,
                 validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel};
         textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
