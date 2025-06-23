@@ -57,13 +57,14 @@ public class Settings extends JDialog {
 
     private static final Map<String, String> THEME_DISPLAY_TO_FILE = Map.of(
             "Dark", "dark.xml",
-            "VS", "vs.xml",
-            "IDEA", "idea.xml",
-            "Eclipse", "eclipse.xml",
-            "Monokai", "monokai.xml",
             "Default", "default.xml",
-            "Default Alt", "default-alt.xml",
-            "Druid", "druid.xml"
+            "Eclipse", "eclipse.xml",
+            "IDEA", "idea.xml",
+            "IDEA Dark", "idea-dark.xml",
+            "Monokai", "monokai.xml",
+            "Monokai Dark", "monokai-dark.xml",
+            "VS", "vs.xml",
+            "VS Dark", "vs-dark.xml"
     );
 
     public Settings(JFrame parent) {
@@ -100,7 +101,9 @@ public class Settings extends JDialog {
 
         // RSyntax panel for syntax highlighting themes
         rsyntaxPanel = new JPanel();
-        rsyntaxThemeCombo = new JComboBox<>(THEME_DISPLAY_TO_FILE.keySet().toArray(new String[0]));
+        java.util.List<String> sortedThemes = new java.util.ArrayList<>(THEME_DISPLAY_TO_FILE.keySet());
+        java.util.Collections.sort(sortedThemes);
+        rsyntaxThemeCombo = new JComboBox<>(sortedThemes.toArray(new String[0]));
 
     }
 
