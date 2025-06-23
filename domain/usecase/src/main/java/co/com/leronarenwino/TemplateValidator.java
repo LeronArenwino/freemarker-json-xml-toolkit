@@ -38,15 +38,46 @@ public class TemplateValidator {
         return templateProcessor.processTemplate(templateContent, dataModel);
     }
 
-    public static List<String> validateFieldsPresent(String jsonOutput, String[] expectedFields) throws Exception {
+    public static List<String> validateFieldsPresentWithTypes(String jsonOutput, String[] expectedFields) throws Exception {
         List<String> missing = new ArrayList<>(expectedFields.length);
         JsonNode jsonNode = MAPPER.readTree(jsonOutput);
         for (String field : expectedFields) {
-            if (!field.isEmpty() && !jsonNode.has(field)) {
+            if (field.isEmpty()) continue;
+            String[] parts = field.split(":");
+            String fieldPath = parts[0];
+            String expectedType = parts.length > 1 ? parts[1].toLowerCase() : null;
+            JsonNode valueNode = getNestedField(jsonNode, fieldPath);
+            if (valueNode == null || valueNode.isMissingNode()) {
                 missing.add(field);
+            } else if (expectedType != null && !matchesType(valueNode, expectedType)) {
+                missing.add(field + " (type mismatch)");
             }
         }
         return missing;
+    }
+
+    private static JsonNode getNestedField(JsonNode node, String fieldPath) {
+        String[] parts = fieldPath.split("\\.");
+        JsonNode current = node;
+        for (String part : parts) {
+            if (current == null || !current.has(part)) {
+                return null;
+            }
+            current = current.get(part);
+        }
+        return current;
+    }
+
+    private static boolean matchesType(JsonNode node, String type) {
+        return switch (type) {
+            case "string" -> node.isTextual();
+            case "number" -> node.isNumber();
+            case "boolean" -> node.isBoolean();
+            case "object" -> node.isObject();
+            case "array" -> node.isArray();
+            case "null" -> node.isNull();
+            default -> false;
+        };
     }
 
     public static Map<String, Object> parseJsonToDataModel(String json) throws Exception {

@@ -95,7 +95,7 @@ public class TemplateUtils {
     }
 
     public static List<String> validateFields(String output, String[] expectedFields) throws Exception {
-        return TemplateValidator.validateFieldsPresent(output, expectedFields);
+        return TemplateValidator.validateFieldsPresentWithTypes(output, expectedFields);
     }
 
     public static Map<String, Object> parseDataModel(String json) throws Exception {
