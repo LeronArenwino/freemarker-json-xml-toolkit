@@ -27,84 +27,90 @@ import java.util.function.BiFunction;
 public class Settings extends JDialog {
 
     private JPanel mainPanel;
-    private JPanel optionsPanel;
+    private JTabbedPane tabbedPane;
+
+    // Editor tab
+    private JPanel editorPanel;
+    private JComboBox<String> themeCombo;
+
+    // FreeMarker tab
+    private JPanel freemarkerPanel;
     private BiFunction<String, JComboBox<String>, JPanel> createOption;
+    private JComboBox<String> localeCombo;
+    private JComboBox<String> timeZoneCombo;
 
     private JPanel buttonPanel;
     private JButton closeButton;
 
-    private JComboBox<String> localeCombo;
-    private JComboBox<String> timeZoneCombo;
-
     public Settings(JFrame parent) {
-        super(parent, "FreeMarker Options", true);
+        super(parent, "Settings", true);
         setSize(400, 250);
         setResizable(false);
         setLocationRelativeTo(parent);
-        setLayout(new FlowLayout(FlowLayout.LEFT, 10, 10));
 
         initComponents();
-
         setComponents();
-
         addComponents();
-
     }
 
     private void initComponents() {
+        mainPanel = new JPanel(new BorderLayout(0, 10));
+        tabbedPane = new JTabbedPane();
 
-        // Initializing panels and buttons
-        mainPanel = new JPanel();
+        // Editor tab
+        editorPanel = new JPanel();
+        themeCombo = new JComboBox<>(new String[]{"Dark", "Light"});
+
+        // FreeMarker tab
         createOption = getOptionPanelCreator();
-        optionsPanel = new JPanel();
-        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
-        closeButton = new JButton("Close");
-
-        // Initializing combo boxes with options
+        freemarkerPanel = new JPanel();
         localeCombo = new JComboBox<>(new String[]{"en_US", "es_CO", "fr_FR"});
         timeZoneCombo = new JComboBox<>(new String[]{"America/Los_Angeles", "UTC"});
 
+        // Buttons
+        buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
+        closeButton = new JButton("Close");
     }
 
     private void setComponents() {
-
-        // Setting layout and borders for the main panel and options panel
-        mainPanel.setLayout(new BorderLayout(0, 10));
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        optionsPanel.setLayout(new BoxLayout(optionsPanel, BoxLayout.Y_AXIS));
-
         setContentPane(mainPanel);
 
+        // Editor panel layout
+        editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.Y_AXIS));
+        editorPanel.add(createOption.apply("Theme:", themeCombo));
+
+        // FreeMarker panel layout
+        freemarkerPanel.setLayout(new BoxLayout(freemarkerPanel, BoxLayout.Y_AXIS));
+        Properties defaults = SettingsSingleton.defaultFreemarkerProperties();
+        localeCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
+        timeZoneCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
+        freemarkerPanel.add(createOption.apply("Locale:", localeCombo));
+        freemarkerPanel.add(Box.createVerticalStrut(5));
+        freemarkerPanel.add(createOption.apply("Time zone:", timeZoneCombo));
     }
 
     private void addComponents() {
+        tabbedPane.addTab("Editor", editorPanel);
+        tabbedPane.addTab("FreeMarker", freemarkerPanel);
 
-        // Adding options to the options panel
-        Properties defaults = SettingsSingleton.defaultFreemarkerProperties();
-
-        // Setting default values for combo boxes from the defaults properties
-        localeCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
-        timeZoneCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
-
-        // Creating and adding option panels to the options panel
-        optionsPanel.add(createOption.apply("Locale:", localeCombo));
-        optionsPanel.add(Box.createVerticalStrut(5));
-        optionsPanel.add(createOption.apply("Time zone:", timeZoneCombo));
-
-        // Adding the close button to the button panel
         closeButton.addActionListener(e -> dispose());
         buttonPanel.add(closeButton);
 
-        // Adding the options panel and button panel to the main panel
-        mainPanel.add(optionsPanel, BorderLayout.CENTER);
+        mainPanel.add(tabbedPane, BorderLayout.CENTER);
         mainPanel.add(buttonPanel, BorderLayout.SOUTH);
 
+        // Theme change listener (example)
+        themeCombo.addActionListener(e -> {
+            String selected = (String) themeCombo.getSelectedItem();
+            // Save theme to settings and trigger UI update
+            SettingsSingleton.setTheme(selected);
+            // You should implement a method to repaint the main UI with the new theme
+        });
     }
 
     private static BiFunction<String, JComboBox<String>, JPanel> getOptionPanelCreator() {
         Font compactFont = new Font("SansSerif", Font.PLAIN, 11);
-
-        // Función auxiliar para crear sub paneles compactos de opción
         return (labelText, comboBox) -> {
             JLabel label = new JLabel(labelText);
             label.setMaximumSize(new Dimension(100, 20));
@@ -119,5 +125,4 @@ public class Settings extends JDialog {
             return panel;
         };
     }
-
 }

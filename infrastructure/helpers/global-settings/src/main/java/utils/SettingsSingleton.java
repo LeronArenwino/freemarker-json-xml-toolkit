@@ -33,6 +33,18 @@ public class SettingsSingleton {
     private static String locale = DEFAULT_LOCALE;
     private static String timeZone = DEFAULT_TIME_ZONE;
 
+    private static String theme = "Dark";
+
+    public static String getTheme() {
+        return theme;
+    }
+
+    public static void setTheme(String newTheme) {
+        if (newTheme != null && (newTheme.equals("Dark") || newTheme.equals("Light"))) {
+            theme = newTheme;
+        }
+    }
+
     public static Properties defaultFreemarkerProperties() {
         Properties properties = new Properties();
         properties.setProperty(FREEMARKER_LOCALE, DEFAULT_LOCALE);
