@@ -23,7 +23,6 @@ import co.com.leronarenwino.settings.Settings;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
-import utils.PropertiesManager;
 import utils.SettingsSingleton;
 
 import javax.swing.*;
@@ -32,6 +31,7 @@ import java.util.Map;
 
 import static co.com.leronarenwino.editor.TemplateUtils.*;
 import static co.com.leronarenwino.settings.Settings.PROPERTIES_FILE;
+import static utils.PropertiesManager.loadProperties;
 import static utils.SettingsSingleton.defaultAppProperties;
 import static utils.SettingsSingleton.setSettingsFromProperties;
 
@@ -107,7 +107,7 @@ public class TemplateEditor extends JFrame {
 
         // Set default properties from file or create new ones
         setSettingsFromProperties(
-                PropertiesManager.loadProperties(
+                loadProperties(
                         PROPERTIES_FILE,
                         defaultAppProperties()
                 )

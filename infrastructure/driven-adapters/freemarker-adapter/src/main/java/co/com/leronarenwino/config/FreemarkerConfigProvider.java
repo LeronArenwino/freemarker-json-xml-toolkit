@@ -25,19 +25,38 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class FreemarkerConfigProvider {
-    private static final Configuration cfg = createConfiguration();
+    private static Configuration cfg = createConfiguration();
+
+    public static synchronized void reloadConfiguration() {
+        cfg = createConfiguration();
+    }
 
     private static Configuration createConfiguration() {
         Configuration configuration = new Configuration(Configuration.VERSION_2_3_34);
         configuration.setDefaultEncoding("UTF-8");
+
+        // Load settings from SettingsSingleton (which reads from properties)
+        String localeStr = SettingsSingleton.getLocale();
+        String timeZoneStr = SettingsSingleton.getTimeZone();
+
+        // Set locale
+        if (localeStr != null && !localeStr.isEmpty()) {
+            String[] parts = localeStr.split("_");
+            if (parts.length == 2) {
+                configuration.setLocale(new Locale(parts[0], parts[1]));
+            } else {
+                configuration.setLocale(Locale.forLanguageTag(localeStr));
+            }
+        }
+
+        // Set time zone
+        if (timeZoneStr != null && !timeZoneStr.isEmpty()) {
+            configuration.setTimeZone(TimeZone.getTimeZone(timeZoneStr));
+        }
+
         configuration.setTemplateExceptionHandler(TemplateExceptionHandler.RETHROW_HANDLER);
         configuration.setLogTemplateExceptions(false);
         configuration.setWrapUncheckedExceptions(true);
-        configuration.setFallbackOnNullLoopVariable(false);
-
-        // Apply settings from SettingsSingleton
-        configuration.setLocale(Locale.forLanguageTag(SettingsSingleton.getLocale().replace('_', '-')));
-        configuration.setSQLDateAndTimeTimeZone(TimeZone.getTimeZone(SettingsSingleton.getTimeZone()));
 
         return configuration;
     }

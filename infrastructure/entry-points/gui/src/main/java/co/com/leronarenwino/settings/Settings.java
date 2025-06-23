@@ -27,12 +27,16 @@ import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
+import static co.com.leronarenwino.config.FreemarkerConfigProvider.reloadConfiguration;
+import static utils.PropertiesManager.loadProperties;
 import static utils.SettingsSingleton.defaultAppProperties;
 
 public class Settings extends JDialog {
 
+    // Constants for property keys
     public static final String PROPERTIES_FILE = "config.properties";
 
+    // Main panel and tabbed pane
     private JPanel mainPanel;
     private JTabbedPane tabbedPane;
 
@@ -46,14 +50,18 @@ public class Settings extends JDialog {
     private JComboBox<String> localeCombo;
     private JComboBox<String> timeZoneCombo;
 
+    // Buttons
     private JPanel buttonPanel;
     private JButton cancelButton;
-
     private JButton okButton;
     private JButton applyButton;
 
+    // RSyntax panel for syntax highlighting themes
     private JPanel rsyntaxPanel;
     private JComboBox<String> rsyntaxThemeCombo;
+
+    // Properties for storing settings
+    private Properties props;
 
     private static final Map<String, String> THEME_DISPLAY_TO_FILE = Map.of(
             "Dark", "dark.xml",
@@ -105,6 +113,11 @@ public class Settings extends JDialog {
         java.util.Collections.sort(sortedThemes);
         rsyntaxThemeCombo = new JComboBox<>(sortedThemes.toArray(new String[0]));
 
+        props = loadProperties(PROPERTIES_FILE, defaultAppProperties());
+        if (props.isEmpty()) {
+            props = defaultAppProperties();
+        }
+
     }
 
     private void setComponents() {
@@ -121,9 +134,10 @@ public class Settings extends JDialog {
 
         // FreeMarker panel layout
         freemarkerPanel.setLayout(new BoxLayout(freemarkerPanel, BoxLayout.Y_AXIS));
-        Properties defaults = defaultAppProperties();
-        localeCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
-        timeZoneCombo.setSelectedItem(defaults.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
+
+        // Set default locale and time zone from properties
+        localeCombo.setSelectedItem(props.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
+        timeZoneCombo.setSelectedItem(props.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
         freemarkerPanel.add(createOption.apply("Locale:", localeCombo));
         freemarkerPanel.add(Box.createVerticalStrut(5));
         freemarkerPanel.add(createOption.apply("Time zone:", timeZoneCombo));
@@ -144,12 +158,16 @@ public class Settings extends JDialog {
 
         okButton.addActionListener(e -> {
             saveSettings();
+            loadSettings();
             applyThemeToParent();
+            reloadConfiguration();
             dispose();
         });
         applyButton.addActionListener(e -> {
             saveSettings();
+            loadSettings();
             applyThemeToParent();
+            reloadConfiguration();
         });
 
         mainPanel.add(tabbedPane, BorderLayout.CENTER);
@@ -188,7 +206,7 @@ public class Settings extends JDialog {
     }
 
     private void loadSettings() {
-        Properties props = PropertiesManager.loadProperties(PROPERTIES_FILE, defaultAppProperties());
+        Properties props = loadProperties(PROPERTIES_FILE, defaultAppProperties());
 
         if (props.isEmpty()) {
             props = defaultAppProperties();
