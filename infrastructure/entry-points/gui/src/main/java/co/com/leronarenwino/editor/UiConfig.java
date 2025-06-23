@@ -18,10 +18,12 @@
 package co.com.leronarenwino.editor;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.Theme;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import javax.swing.*;
 import java.awt.*;
+import java.io.InputStream;
 
 public class UiConfig {
 
@@ -52,6 +54,19 @@ public class UiConfig {
             setCurrentColors(LIGHT_BG, LIGHT_FG, LIGHT_BUTTON_BG, LIGHT_BUTTON_FG, LIGHT_SCROLLBAR_TRACK);
         } else {
             setCurrentColors(DARK_BG, DARK_FG, BUTTON_BG, BUTTON_FG, SCROLLBAR_TRACK);
+        }
+    }
+
+    public static void applyRSyntaxTheme(RSyntaxTextArea textArea, String themeResourcePath, Component parent) {
+        try (InputStream in = UiConfig.class.getResourceAsStream(themeResourcePath)) {
+            if (in != null) {
+                Theme theme = Theme.load(in);
+                theme.apply(textArea);
+            } else {
+                TemplateUtils.showCopyableErrorDialog(parent, "Theme resource not found: " + themeResourcePath);
+            }
+        } catch (Exception e) {
+            TemplateUtils.showCopyableErrorDialog(parent, "Error loading theme: " + e.getMessage());
         }
     }
 

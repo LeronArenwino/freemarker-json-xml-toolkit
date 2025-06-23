@@ -22,8 +22,10 @@ import utils.SettingsSingleton;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.Map;
 import java.util.Properties;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import static utils.SettingsSingleton.defaultAppProperties;
 
@@ -50,6 +52,19 @@ public class Settings extends JDialog {
     private JButton okButton;
     private JButton applyButton;
 
+    private JPanel rsyntaxPanel;
+    private JComboBox<String> rsyntaxThemeCombo;
+
+    private static final Map<String, String> THEME_DISPLAY_TO_FILE = Map.of(
+            "Dark", "dark.xml",
+            "VS", "vs.xml",
+            "IDEA", "idea.xml",
+            "Eclipse", "eclipse.xml",
+            "Monokai", "monokai.xml",
+            "Default", "default.xml",
+            "Default Alt", "default-alt.xml",
+            "Druid", "druid.xml"
+    );
 
     public Settings(JFrame parent) {
         super(parent, "Settings", true);
@@ -82,6 +97,11 @@ public class Settings extends JDialog {
         okButton = new JButton("OK");
         cancelButton = new JButton("Cancel");
         applyButton = new JButton("Apply");
+
+        // RSyntax panel for syntax highlighting themes
+        rsyntaxPanel = new JPanel();
+        rsyntaxThemeCombo = new JComboBox<>(THEME_DISPLAY_TO_FILE.keySet().toArray(new String[0]));
+
     }
 
     private void setComponents() {
@@ -91,6 +111,10 @@ public class Settings extends JDialog {
         // Editor panel layout
         editorPanel.setLayout(new BoxLayout(editorPanel, BoxLayout.Y_AXIS));
         editorPanel.add(createOption.apply("Theme:", themeCombo));
+
+        // RSyntax panel layout
+        rsyntaxPanel.setLayout(new BoxLayout(rsyntaxPanel, BoxLayout.Y_AXIS));
+        rsyntaxPanel.add(createOption.apply("RSyntax Theme:", rsyntaxThemeCombo));
 
         // FreeMarker panel layout
         freemarkerPanel.setLayout(new BoxLayout(freemarkerPanel, BoxLayout.Y_AXIS));
@@ -104,6 +128,7 @@ public class Settings extends JDialog {
 
     private void addComponents() {
         tabbedPane.addTab("Editor", editorPanel);
+        tabbedPane.addTab("Syntax Theme", rsyntaxPanel);
         tabbedPane.addTab("FreeMarker", freemarkerPanel);
 
         cancelButton.addActionListener(e -> dispose());
@@ -134,6 +159,16 @@ public class Settings extends JDialog {
             SettingsSingleton.setTheme(selected);
             applyThemeToParent();
         });
+
+        // Set default RSyntax theme
+        rsyntaxThemeCombo.addActionListener(e -> {
+            String selectedDisplay = (String) rsyntaxThemeCombo.getSelectedItem();
+            String fileName = THEME_DISPLAY_TO_FILE.get(selectedDisplay);
+            if (fileName != null) {
+                SettingsSingleton.setRSyntaxTheme(fileName);
+                applyThemeToParent();
+            }
+        });
     }
 
     private void saveSettings() {
@@ -141,7 +176,11 @@ public class Settings extends JDialog {
         props.setProperty(SettingsSingleton.FREEMARKER_LOCALE, (String) localeCombo.getSelectedItem());
         props.setProperty(SettingsSingleton.FREEMARKER_TIME_ZONE, (String) timeZoneCombo.getSelectedItem());
         props.setProperty(SettingsSingleton.APP_THEME, (String) themeCombo.getSelectedItem());
+        String selectedDisplay = (String) rsyntaxThemeCombo.getSelectedItem();
+        String fileName = THEME_DISPLAY_TO_FILE.get(selectedDisplay);
+        props.setProperty(SettingsSingleton.RSYNTAX_THEME, fileName);
         PropertiesManager.saveProperties(PROPERTIES_FILE, props);
+
 
     }
 
@@ -155,9 +194,16 @@ public class Settings extends JDialog {
         localeCombo.setSelectedItem(props.getProperty(SettingsSingleton.FREEMARKER_LOCALE));
         timeZoneCombo.setSelectedItem(props.getProperty(SettingsSingleton.FREEMARKER_TIME_ZONE));
         themeCombo.setSelectedItem(props.getProperty(SettingsSingleton.APP_THEME));
+        String fileName = props.getProperty(SettingsSingleton.RSYNTAX_THEME, "idea.xml");
+        String displayName = THEME_FILE_TO_DISPLAY.getOrDefault(fileName, "IDEA");
+        rsyntaxThemeCombo.setSelectedItem(displayName);
+        SettingsSingleton.setRSyntaxTheme(fileName);
         SettingsSingleton.setSettingsFromProperties(props);
 
     }
+
+    private static final Map<String, String> THEME_FILE_TO_DISPLAY = THEME_DISPLAY_TO_FILE.entrySet()
+            .stream().collect(Collectors.toMap(Map.Entry::getValue, Map.Entry::getKey));
 
     private void applyThemeToParent() {
         if (getParent() instanceof co.com.leronarenwino.editor.TemplateEditor editor) {

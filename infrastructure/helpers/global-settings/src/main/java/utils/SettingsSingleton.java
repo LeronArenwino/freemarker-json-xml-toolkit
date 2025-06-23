@@ -38,15 +38,30 @@ public class SettingsSingleton {
 
     private static String theme = DEFAULT_THEME;
 
+    public static final String RSYNTAX_THEME = "rsyntax_theme";
+    private static final String DEFAULT_RSYNTAX_THEME = "idea.xml";
+
+    private static String rsyntaxTheme = DEFAULT_RSYNTAX_THEME;
+
 
     public static Properties defaultAppProperties() {
         Properties properties = new Properties();
         properties.setProperty(FREEMARKER_LOCALE, DEFAULT_LOCALE);
         properties.setProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
         properties.setProperty(APP_THEME, DEFAULT_THEME);
+        properties.setProperty(RSYNTAX_THEME, DEFAULT_RSYNTAX_THEME);
         return properties;
     }
 
+    public static String getRSyntaxTheme() {
+        return rsyntaxTheme;
+    }
+
+    public static void setRSyntaxTheme(String theme) {
+        if (theme != null && !theme.isEmpty()) {
+            rsyntaxTheme = theme;
+        }
+    }
 
     public static String getTheme() {
         return theme;
@@ -62,6 +77,7 @@ public class SettingsSingleton {
         locale = properties.getProperty(FREEMARKER_LOCALE, DEFAULT_LOCALE);
         timeZone = properties.getProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
         theme = properties.getProperty(APP_THEME, DEFAULT_THEME);
+        rsyntaxTheme = properties.getProperty(RSYNTAX_THEME, DEFAULT_RSYNTAX_THEME);
     }
 
     public static String getLocale() {

@@ -365,8 +365,21 @@ public class TemplateEditor extends JFrame {
         UiConfig.setCaretColors(UiConfig.CURRENT_FG, textAreas);
         UiConfig.setScrollBarColors(UiConfig.CURRENT_SCROLLBAR_TRACK, scrollPanes);
 
+        applyRSyntaxThemeToAllAreas(this);
+
     }
 
+    private void applyRSyntaxThemeToAllAreas(Component parent) {
+        String rsyntaxTheme = SettingsSingleton.getRSyntaxTheme();
+        String themePath = "/themes/" + rsyntaxTheme;
+        for (RSyntaxTextArea area : textAreas) {
+            try {
+                UiConfig.applyRSyntaxTheme(area, themePath, parent);
+            } catch (Exception ignored) {
+
+            }
+        }
+    }
 
     private void processTemplateOutput() {
         String templateContent = templateInputTextArea.getText();
@@ -438,6 +451,5 @@ public class TemplateEditor extends JFrame {
             label.setText("Line: ?, Column: ?");
         }
     }
-
 
 }
