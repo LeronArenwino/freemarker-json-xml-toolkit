@@ -50,7 +50,7 @@ public class TemplateValidator {
             if (valueNode == null || valueNode.isMissingNode()) {
                 missing.add(field);
             } else if (expectedType != null && !matchesType(valueNode, expectedType)) {
-                missing.add(field + " (type mismatch)");
+                missing.add(field + " (Type mismatch)");
             }
         }
         return missing;
@@ -105,4 +105,62 @@ public class TemplateValidator {
             }
         }
     }
+
+    public static String formatFreemarkerTemplateCombined(String template) {
+        // Step 1: Add line breaks after FreeMarker directives
+        String formatted = template.replaceAll("(<#.*?>)", "$1\n");
+
+        // Step 2: Pretty-print map assignments inside <#assign ... = {...}>
+        StringBuilder sb = new StringBuilder();
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(<#assign\\s+\\w+\\s*=\\s*)\\{([^}]*)}");
+        java.util.regex.Matcher matcher = pattern.matcher(formatted);
+        int lastEnd = 0;
+        while (matcher.find()) {
+            sb.append(formatted, lastEnd, matcher.start());
+            String before = matcher.group(1);
+            String mapBody = matcher.group(2).trim();
+            // Split entries by comma, trim, and join with a single line break and indentation
+            String[] entries = mapBody.split("\\s*,\\s*");
+            StringBuilder mapFormatted = new StringBuilder("{\n");
+            for (int i = 0; i < entries.length; i++) {
+                mapFormatted.append("    ").append(entries[i]);
+                if (i < entries.length - 1) {
+                    mapFormatted.append(",");
+                }
+                mapFormatted.append("\n");
+            }
+            mapFormatted.append("}");
+            sb.append(before).append(mapFormatted);
+            lastEnd = matcher.end();
+        }
+        sb.append(formatted.substring(lastEnd));
+        // Step 3: Remove extra blank lines and trim
+        return sb.toString().replaceAll("[\\n\\r]+", "\n").replaceAll("\\n{2,}", "\n").trim();
+    }
+
+    public static String toSingleLine(String template) {
+        if (template == null) return "";
+        // Remove all whitespace between > and <
+        String noSpacesBetweenTags = template.replaceAll(">\\s+<", "><");
+
+        // Remove spaces inside {...} blocks only
+        StringBuilder result = new StringBuilder();
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("\\{([^}]*)}");
+        java.util.regex.Matcher matcher = pattern.matcher(noSpacesBetweenTags);
+        int lastEnd = 0;
+        while (matcher.find()) {
+            result.append(noSpacesBetweenTags, lastEnd, matcher.start());
+            String content = matcher.group(1)
+                    .replaceAll("\\s*,\\s*", ",")
+                    .replaceAll("\\s*:\\s*", ":")
+                    .replaceAll("^\\s+|\\s+$", "");
+            result.append("{").append(content).append("}");
+            lastEnd = matcher.end();
+        }
+        result.append(noSpacesBetweenTags.substring(lastEnd));
+
+        // Remove line breaks and collapse multiple spaces to one
+        return result.toString().replaceAll("[\\r\\n]+", " ").replaceAll("\\s{2,}", " ").trim();
+    }
+
 }

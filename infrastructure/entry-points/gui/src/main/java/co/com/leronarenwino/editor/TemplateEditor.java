@@ -29,6 +29,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
 
+import static co.com.leronarenwino.TemplateValidator.formatFreemarkerTemplateCombined;
 import static co.com.leronarenwino.editor.TemplateUtils.*;
 import static co.com.leronarenwino.settings.Settings.PROPERTIES_FILE;
 import static utils.PropertiesManager.loadProperties;
@@ -52,7 +53,6 @@ public class TemplateEditor extends JFrame {
     private JPanel bottomPanel;
     private JPanel buttonPanel;
     private JPanel centerButtonsPanel;
-    private Box rightDataPositionBox;
 
     // Panel for validation
     private JPanel validationPanel;
@@ -61,6 +61,9 @@ public class TemplateEditor extends JFrame {
 
     private JPanel dataBottomPanel;
     private JButton validateDataModelButton;
+    private JPanel templateBottomPanel;
+    private JButton validateTemplateModelButton;
+    private JButton singleLineTemplateButton;
 
     // Components for template input
     private RSyntaxTextArea templateInputTextArea;
@@ -143,13 +146,13 @@ public class TemplateEditor extends JFrame {
         leftPanel = new JPanel();
         rightPanel = new JPanel();
         bottomPanel = new JPanel(new BorderLayout(5, 5));
-        rightDataPositionBox = Box.createHorizontalBox();
 
         // Validation and button panels
         validationPanel = new JPanel();
         buttonPanel = new JPanel(new BorderLayout(5, 5));
         centerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         dataBottomPanel = new JPanel();
+        templateBottomPanel = new JPanel();
 
         // Template input
         templateInputTextArea = new RSyntaxTextArea(10, 40);
@@ -176,6 +179,8 @@ public class TemplateEditor extends JFrame {
         formatJsonButton = new JButton("Format to JSON");
         validateFieldsButton = new JButton("Validate Output Fields");
         validateDataModelButton = new JButton("Format to JSON");
+        validateTemplateModelButton = new JButton("Format Template");
+        singleLineTemplateButton = new JButton("Single Line");
 
         // Caret position labels
         templatePositionLabel = new JLabel("Line: 1  Column: 1");
@@ -184,10 +189,10 @@ public class TemplateEditor extends JFrame {
 
         // Initialize arrays for easy access
         panels = new JPanel[]{mainPanel, columnsPanel, leftPanel, rightPanel, bottomPanel,
-                validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel};
+                validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel, templateBottomPanel};
         textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
         labels = new JLabel[]{validationResultLabel, templatePositionLabel, dataPositionLabel, outputPositionLabel};
-        buttons = new JButton[]{processTemplateButton, formatJsonButton, clearOutputButton, validateFieldsButton, validateDataModelButton};
+        buttons = new JButton[]{processTemplateButton, formatJsonButton, clearOutputButton, validateFieldsButton, validateDataModelButton, validateTemplateModelButton};
         scrollPanes = new RTextScrollPane[]{templateInputScrollPane, dataInputScrollPane, expectedFieldsScrollPane, outputJsonScrollPane};
         scrollPaneTitles = new String[]{"Template", "Data Model", "Expected fields", "Rendered Result"};
 
@@ -200,7 +205,7 @@ public class TemplateEditor extends JFrame {
 
         // Left and right panels setup
         leftPanel.setLayout(new BorderLayout(5, 5));
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
+        rightPanel.setLayout(new BorderLayout(5, 5));
 
         // Template input text area setup
         templateInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
@@ -267,6 +272,7 @@ public class TemplateEditor extends JFrame {
         // Validation panel setup
         validationPanel.setLayout(new BoxLayout(validationPanel, BoxLayout.X_AXIS));
         dataBottomPanel.setLayout(new BoxLayout(dataBottomPanel, BoxLayout.X_AXIS));
+        templateBottomPanel.setLayout(new BoxLayout(templateBottomPanel, BoxLayout.X_AXIS));
 
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
@@ -298,11 +304,14 @@ public class TemplateEditor extends JFrame {
         leftPanel.add(dataInputScrollPane, BorderLayout.CENTER);
         leftPanel.add(dataBottomPanel, BorderLayout.SOUTH);
 
+        templateBottomPanel.add(validateTemplateModelButton);
+        templateBottomPanel.add(singleLineTemplateButton);
+        templateBottomPanel.add(Box.createHorizontalGlue());
+        templateBottomPanel.add(templatePositionLabel);
+
         // Right column addition
-        rightPanel.add(templateInputScrollPane);
-        rightDataPositionBox.add(Box.createHorizontalGlue());
-        rightDataPositionBox.add(templatePositionLabel);
-        rightPanel.add(rightDataPositionBox);
+        rightPanel.add(templateInputScrollPane, BorderLayout.CENTER);
+        rightPanel.add(templateBottomPanel, BorderLayout.SOUTH);
 
         // Columns addition
         columnsPanel.add(leftPanel);
@@ -327,6 +336,8 @@ public class TemplateEditor extends JFrame {
 
         // Button actions
         validateDataModelButton.addActionListener(e -> formatDataInputJson());
+        validateTemplateModelButton.addActionListener(e -> formatTemplateInputArea());
+        singleLineTemplateButton.addActionListener(e -> setTemplateToSingleLine());
         formatJsonButton.addActionListener(e -> formatJsonOutput());
         processTemplateButton.addActionListener(e -> processTemplateOutput());
         clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
@@ -439,6 +450,18 @@ public class TemplateEditor extends JFrame {
                     lastValidDataInput = formatted;
                 }
         );
+    }
+
+    private void formatTemplateInputArea() {
+        String template = templateInputTextArea.getText();
+        String formatted = formatFreemarkerTemplateCombined(template);
+        templateInputTextArea.setText(formatted);
+    }
+
+    private void setTemplateToSingleLine() {
+        String template = templateInputTextArea.getText();
+        String singleLine = TemplateValidator.toSingleLine(template);
+        templateInputTextArea.setText(singleLine);
     }
 
     private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
