@@ -192,7 +192,7 @@ public class TemplateEditor extends JFrame {
                 validationPanel, buttonPanel, centerButtonsPanel, dataBottomPanel, templateBottomPanel};
         textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
         labels = new JLabel[]{validationResultLabel, templatePositionLabel, dataPositionLabel, outputPositionLabel};
-        buttons = new JButton[]{processTemplateButton, formatJsonButton, clearOutputButton, validateFieldsButton, validateDataModelButton, validateTemplateModelButton};
+        buttons = new JButton[]{processTemplateButton, formatJsonButton, clearOutputButton, validateFieldsButton, validateDataModelButton, validateTemplateModelButton, singleLineTemplateButton};
         scrollPanes = new RTextScrollPane[]{templateInputScrollPane, dataInputScrollPane, expectedFieldsScrollPane, outputJsonScrollPane};
         scrollPaneTitles = new String[]{"Template", "Data Model", "Expected fields", "Rendered Result"};
 
@@ -305,6 +305,7 @@ public class TemplateEditor extends JFrame {
         leftPanel.add(dataBottomPanel, BorderLayout.SOUTH);
 
         templateBottomPanel.add(validateTemplateModelButton);
+        templateBottomPanel.add(Box.createHorizontalStrut(10));
         templateBottomPanel.add(singleLineTemplateButton);
         templateBottomPanel.add(Box.createHorizontalGlue());
         templateBottomPanel.add(templatePositionLabel);
