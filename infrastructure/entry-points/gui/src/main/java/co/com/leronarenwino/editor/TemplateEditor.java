@@ -96,12 +96,21 @@ public class TemplateEditor extends JFrame {
     private String lastFormattedDataInput;
     private String lastValidDataInput;
 
+    // Arrays for easy access to components
     private JPanel[] panels;
     private RSyntaxTextArea[] textAreas;
     private JLabel[] labels;
     private JButton[] buttons;
     private RTextScrollPane[] scrollPanes;
     private String[] scrollPaneTitles;
+
+    // Search and replace components
+    private JTextField searchField;
+    private JTextField replaceField;
+    private JCheckBox regexCB;
+    private JCheckBox matchCaseCB;
+    private JToolBar findReplaceBar;
+    private RSyntaxTextArea currentTextArea;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -196,6 +205,12 @@ public class TemplateEditor extends JFrame {
         scrollPanes = new RTextScrollPane[]{templateInputScrollPane, dataInputScrollPane, expectedFieldsScrollPane, outputJsonScrollPane};
         scrollPaneTitles = new String[]{"Template", "Data Model", "Expected fields", "Rendered Result"};
 
+        searchField = new JTextField(15);
+        replaceField = new JTextField(15);
+        regexCB = new JCheckBox("Regex");
+        matchCaseCB = new JCheckBox("Match Case");
+        findReplaceBar = new JToolBar();
+
     }
 
     public void setComponents() {
@@ -274,6 +289,8 @@ public class TemplateEditor extends JFrame {
         dataBottomPanel.setLayout(new BoxLayout(dataBottomPanel, BoxLayout.X_AXIS));
         templateBottomPanel.setLayout(new BoxLayout(templateBottomPanel, BoxLayout.X_AXIS));
 
+        findReplaceBar.setVisible(true);
+
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
         setMinimumSize(new Dimension(600, 480));
@@ -288,6 +305,36 @@ public class TemplateEditor extends JFrame {
 
     public void addComponents() {
 
+
+        findReplaceBar.add(new JLabel("Buscar: "));
+        findReplaceBar.add(searchField);
+        findReplaceBar.add(new JLabel("Reemplazar: "));
+        findReplaceBar.add(replaceField);
+
+        JButton findNextBtn = new JButton("Buscar siguiente");
+        findNextBtn.addActionListener(e -> findOrReplace("findNext"));
+        findReplaceBar.add(findNextBtn);
+
+        JButton findPrevBtn = new JButton("Buscar anterior");
+        findPrevBtn.addActionListener(e -> findOrReplace("findPrev"));
+        findReplaceBar.add(findPrevBtn);
+
+        JButton replaceBtn = new JButton("Reemplazar");
+        replaceBtn.addActionListener(e -> findOrReplace("replace"));
+        findReplaceBar.add(replaceBtn);
+
+        JButton replaceAllBtn = new JButton("Reemplazar todo");
+        replaceAllBtn.addActionListener(e -> findOrReplace("replaceAll"));
+        findReplaceBar.add(replaceAllBtn);
+
+        findReplaceBar.add(regexCB);
+        findReplaceBar.add(matchCaseCB);
+
+
+
+// Añade la barra al principio del mainPanel:
+        mainPanel.add(findReplaceBar, BorderLayout.NORTH);
+
         // Menu bar addition
         exitItem.addActionListener(e -> System.exit(0));
         fileMenu.add(openSettingsItem);
@@ -301,8 +348,8 @@ public class TemplateEditor extends JFrame {
         dataBottomPanel.add(dataPositionLabel);
 
         // Left column addition
-        leftPanel.add(dataInputScrollPane, BorderLayout.CENTER);
-        leftPanel.add(dataBottomPanel, BorderLayout.SOUTH);
+        rightPanel.add(dataInputScrollPane, BorderLayout.CENTER);
+        rightPanel.add(dataBottomPanel, BorderLayout.SOUTH);
 
         templateBottomPanel.add(validateTemplateModelButton);
         templateBottomPanel.add(Box.createHorizontalStrut(10));
@@ -311,8 +358,8 @@ public class TemplateEditor extends JFrame {
         templateBottomPanel.add(templatePositionLabel);
 
         // Right column addition
-        rightPanel.add(templateInputScrollPane, BorderLayout.CENTER);
-        rightPanel.add(templateBottomPanel, BorderLayout.SOUTH);
+        leftPanel.add(templateInputScrollPane, BorderLayout.CENTER);
+        leftPanel.add(templateBottomPanel, BorderLayout.SOUTH);
 
         // Columns addition
         columnsPanel.add(leftPanel);
@@ -363,6 +410,11 @@ public class TemplateEditor extends JFrame {
         dataInputTextArea.addCaretListener(e -> updateCaretPosition(dataInputTextArea, dataPositionLabel));
         outputJsonTextArea.addCaretListener(e -> updateCaretPosition(outputJsonTextArea, outputPositionLabel));
 
+        addFocusListenerToArea(templateInputTextArea);
+        addFocusListenerToArea(dataInputTextArea);
+        addFocusListenerToArea(expectedFieldsTextArea);
+        addFocusListenerToArea(outputJsonTextArea);
+
     }
 
     public void paintComponents() {
@@ -379,6 +431,63 @@ public class TemplateEditor extends JFrame {
 
         applyRSyntaxThemeToAllAreas(this);
 
+    }
+
+    private void findOrReplace(String action) {
+        RSyntaxTextArea area = currentTextArea != null ? currentTextArea : templateInputTextArea;
+        String search = searchField.getText();
+        if (search.isEmpty()) return;
+
+        org.fife.ui.rtextarea.SearchContext context = new org.fife.ui.rtextarea.SearchContext();
+        context.setSearchFor(search);
+        context.setReplaceWith(replaceField.getText());
+        context.setMatchCase(matchCaseCB.isSelected());
+        context.setRegularExpression(regexCB.isSelected());
+        boolean forward = !"findPrev".equals(action);
+        context.setSearchForward(forward);
+        context.setWholeWord(false);
+
+        org.fife.ui.rtextarea.SearchResult result;
+        boolean found;
+
+        switch (action) {
+            case "findNext":
+            case "findPrev":
+                result = org.fife.ui.rtextarea.SearchEngine.find(area, context);
+                found = result.wasFound();
+                if (!found) {
+                    // Wrap search: move caret and try again
+                    if (forward) {
+                        area.setCaretPosition(0);
+                    } else {
+                        area.setCaretPosition(area.getDocument().getLength());
+                    }
+                    result = org.fife.ui.rtextarea.SearchEngine.find(area, context);
+                    found = result.wasFound();
+                }
+                if (!found) {
+                    JOptionPane.showMessageDialog(this, "Text not found.");
+                }
+                break;
+            case "replace":
+                result = org.fife.ui.rtextarea.SearchEngine.replace(area, context);
+                if (!result.wasFound()) {
+                    JOptionPane.showMessageDialog(this, "Text not found.");
+                }
+                break;
+            case "replaceAll":
+                result = org.fife.ui.rtextarea.SearchEngine.replaceAll(area, context);
+                JOptionPane.showMessageDialog(this, result.getCount() + " occurrences replaced.");
+                break;
+        }
+    }
+
+    private void addFocusListenerToArea(RSyntaxTextArea area) {
+        area.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusGained(java.awt.event.FocusEvent e) {
+                currentTextArea = area;
+            }
+        });
     }
 
     private void applyRSyntaxThemeToAllAreas(Component parent) {
