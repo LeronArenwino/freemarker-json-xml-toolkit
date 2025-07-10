@@ -8,6 +8,7 @@ version = project.hasProperty('version') ? project.property('version') : 'unspec
 
 application {
     mainClass = 'co.com.leronarenwino.Main'
+    applicationDefaultJvmArgs = ["--enable-native-access=ALL-UNNAMED"]
 }
 
 jar {

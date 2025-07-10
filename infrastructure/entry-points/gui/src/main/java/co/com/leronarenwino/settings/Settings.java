@@ -23,6 +23,7 @@ import utils.SettingsSingleton;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
@@ -93,7 +94,9 @@ public class Settings extends JDialog {
 
         // Editor tab
         editorPanel = new JPanel();
-        themeCombo = new JComboBox<>(new String[]{"Dark", "Light"});
+        themeCombo = new JComboBox<>(new String[]{
+                "Flat Light", "Flat Dark", "Flat IntelliJ", "Flat Darcula"
+        });
 
         // FreeMarker tab
         createOption = getOptionPanelCreator();
@@ -176,9 +179,19 @@ public class Settings extends JDialog {
         // Set default theme
         themeCombo.addActionListener(e -> {
             String selected = (String) themeCombo.getSelectedItem();
-            // Save theme to settings and trigger UI update
-            SettingsSingleton.setTheme(selected);
-            applyThemeToParent();
+            try {
+                switch (Objects.requireNonNull(selected)) {
+                    case "Flat Light" -> UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
+                    case "Flat Dark" -> UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());
+                    case "Flat IntelliJ" -> UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatIntelliJLaf());
+                    case "Flat Darcula" -> UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarculaLaf());
+                }
+                // Update UI for all windows
+                SwingUtilities.updateComponentTreeUI(getParent());
+                SwingUtilities.updateComponentTreeUI(this);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Failed to apply theme: " + ex.getMessage());
+            }
         });
 
         // Set default RSyntax theme
