@@ -98,13 +98,11 @@ public class TemplateEditor extends JFrame {
 
     private RSyntaxTextArea[] textAreas;
 
-    // Search and replace components
-    private JTextField searchField;
-    private JTextField replaceField;
-    private JCheckBox regexCB;
-    private JCheckBox matchCaseCB;
-    private JToolBar findReplaceBar;
-    private RSyntaxTextArea currentTextArea;
+    // Add per-area find/replace bars
+    private JToolBar templateFindReplaceBar;
+    private JToolBar dataFindReplaceBar;
+    private JToolBar expectedFieldsFindReplaceBar;
+    private JToolBar outputFindReplaceBar;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -207,11 +205,11 @@ public class TemplateEditor extends JFrame {
         // Arrays for easy access to components
         textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
 
-        searchField = new JTextField(15);
-        replaceField = new JTextField(15);
-        regexCB = new JCheckBox("Regex");
-        matchCaseCB = new JCheckBox("Match Case");
-        findReplaceBar = new JToolBar();
+        // Initialize per-area find/replace bars
+        templateFindReplaceBar = createFindReplaceBar(templateInputTextArea);
+        dataFindReplaceBar = createFindReplaceBar(dataInputTextArea);
+        expectedFieldsFindReplaceBar = createFindReplaceBar(expectedFieldsTextArea);
+        outputFindReplaceBar = createFindReplaceBar(outputJsonTextArea);
 
     }
 
@@ -306,35 +304,6 @@ public class TemplateEditor extends JFrame {
     }
 
     public void addComponents() {
-
-
-        findReplaceBar.add(new JLabel("Buscar: "));
-        findReplaceBar.add(searchField);
-        findReplaceBar.add(new JLabel("Reemplazar: "));
-        findReplaceBar.add(replaceField);
-
-        JButton findNextBtn = new JButton("Buscar siguiente");
-        findNextBtn.addActionListener(e -> findOrReplace("findNext"));
-        findReplaceBar.add(findNextBtn);
-
-        JButton findPrevBtn = new JButton("Buscar anterior");
-        findPrevBtn.addActionListener(e -> findOrReplace("findPrev"));
-        findReplaceBar.add(findPrevBtn);
-
-        JButton replaceBtn = new JButton("Reemplazar");
-        replaceBtn.addActionListener(e -> findOrReplace("replace"));
-        findReplaceBar.add(replaceBtn);
-
-        JButton replaceAllBtn = new JButton("Reemplazar todo");
-        replaceAllBtn.addActionListener(e -> findOrReplace("replaceAll"));
-        findReplaceBar.add(replaceAllBtn);
-
-        findReplaceBar.add(regexCB);
-        findReplaceBar.add(matchCaseCB);
-
-        // Añade la barra al principio del mainPanel:
-        mainPanel.add(findReplaceBar, BorderLayout.NORTH);
-
         // Menu bar addition
         exitItem.addActionListener(e -> System.exit(0));
         fileMenu.add(openSettingsItem);
@@ -347,19 +316,19 @@ public class TemplateEditor extends JFrame {
         dataBottomPanel.add(Box.createHorizontalGlue());
         dataBottomPanel.add(dataPositionLabel);
 
-        // Left column addition
-        rightPanel.add(dataInputScrollPane, BorderLayout.CENTER);
-        rightPanel.add(dataBottomPanel, BorderLayout.SOUTH);
-
+        // Template bottom panel addition
         templateBottomPanel.add(validateTemplateModelButton);
         templateBottomPanel.add(Box.createHorizontalStrut(10));
         templateBottomPanel.add(singleLineTemplateButton);
         templateBottomPanel.add(Box.createHorizontalGlue());
         templateBottomPanel.add(templatePositionLabel);
 
-        // Right column addition
-        leftPanel.add(templateInputScrollPane, BorderLayout.CENTER);
-        leftPanel.add(templateBottomPanel, BorderLayout.SOUTH);
+        // Usa método utilitario para crear paneles de entrada
+        JPanel dataInputPanel = createInputPanel(dataFindReplaceBar, dataInputScrollPane, dataBottomPanel);
+        JPanel templateInputPanel = createInputPanel(templateFindReplaceBar, templateInputScrollPane, templateBottomPanel);
+
+        rightPanel.add(dataInputPanel, BorderLayout.CENTER);
+        leftPanel.add(templateInputPanel, BorderLayout.CENTER);
 
         // Columns addition
         columnsPanel.add(leftPanel);
