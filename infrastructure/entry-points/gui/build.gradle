@@ -8,13 +8,6 @@ dependencies {
     implementation 'com.fifesoft:rsyntaxtextarea:3.6.0'
     implementation "com.formdev:flatlaf:${flatlafVersion}"
     implementation "com.formdev:flatlaf-intellij-themes:${flatlafVersion}"
-    implementation "com.formdev:flatlaf:${flatlafVersion}:windows-x86_64@dll"
-    implementation "com.formdev:flatlaf:${flatlafVersion}:windows-x86@dll"
-    implementation "com.formdev:flatlaf:${flatlafVersion}:windows-arm64@dll"
-    implementation "com.formdev:flatlaf:${flatlafVersion}:linux-x86_64@so"
-    implementation "com.formdev:flatlaf:${flatlafVersion}:macos-x86_64@dylib"
-    implementation "com.formdev:flatlaf:${flatlafVersion}:macos-arm64@dylib"
-
 
     testImplementation platform('org.junit:junit-bom:5.10.0')
     testImplementation 'org.junit.jupiter:junit-jupiter'
