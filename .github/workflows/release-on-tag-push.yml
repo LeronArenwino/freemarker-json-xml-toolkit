@@ -72,6 +72,13 @@ jobs:
           echo "Generado automáticamente por GitHub Actions." >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
+      - name: Copiar nativos de FlatLaf a build/libs para el release
+        run: |
+          mkdir -p application/app-service/build/libs
+          cp application/app-service/build/dist/*.dll application/app-service/build/libs/ 2>/dev/null || true
+          cp application/app-service/build/dist/*.so application/app-service/build/libs/ 2>/dev/null || true
+          cp application/app-service/build/dist/*.dylib application/app-service/build/libs/ 2>/dev/null || true
+
       - name: Crear y Subir Release
         uses: softprops/action-gh-release@v2
         with:
@@ -80,4 +87,8 @@ jobs:
           body: ${{ steps.generate_release_notes.outputs.notes }}
           draft: false
           prerelease: false
-          files: application/app-service/build/libs/${{ steps.get_root_project_name.outputs.root_project_name }}-${{ steps.get_version.outputs.version }}.jar
+          files: |
+            application/app-service/build/libs/${{ steps.get_root_project_name.outputs.root_project_name }}-${{ steps.get_version.outputs.version }}.jar
+            application/app-service/build/libs/*.dll
+            application/app-service/build/libs/*.so
+            application/app-service/build/libs/*.dylib
