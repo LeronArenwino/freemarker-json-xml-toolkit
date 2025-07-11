@@ -24,6 +24,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
 import utils.SettingsSingleton;
+import co.com.leronarenwino.utils.FindReplacePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -98,11 +99,11 @@ public class TemplateEditor extends JFrame {
 
     private RSyntaxTextArea[] textAreas;
 
-    // Add per-area find/replace bars
-    private JToolBar templateFindReplaceBar;
-    private JToolBar dataFindReplaceBar;
-    private JToolBar expectedFieldsFindReplaceBar;
-    private JToolBar outputFindReplaceBar;
+    // Find/replace panels per area
+    private FindReplacePanel templateFindReplacePanel;
+    private FindReplacePanel dataFindReplacePanel;
+    private FindReplacePanel expectedFieldsFindReplacePanel;
+    private FindReplacePanel outputFindReplacePanel;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -202,14 +203,13 @@ public class TemplateEditor extends JFrame {
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
 
         // Initialize arrays for easy access
-        // Arrays for easy access to components
         textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
 
-        // Initialize per-area find/replace bars
-        templateFindReplaceBar = createFindReplaceBar(templateInputTextArea);
-        dataFindReplaceBar = createFindReplaceBar(dataInputTextArea);
-        expectedFieldsFindReplaceBar = createFindReplaceBar(expectedFieldsTextArea);
-        outputFindReplaceBar = createFindReplaceBar(outputJsonTextArea);
+        // Initialize find/replace bars (hidden by default)
+        templateFindReplacePanel = new FindReplacePanel(templateInputTextArea);
+        dataFindReplacePanel = new FindReplacePanel(dataInputTextArea);
+        expectedFieldsFindReplacePanel = new FindReplacePanel(expectedFieldsTextArea);
+        outputFindReplacePanel = new FindReplacePanel(outputJsonTextArea);
 
     }
 
@@ -228,12 +228,7 @@ public class TemplateEditor extends JFrame {
         templateInputTextArea.setLineWrap(false);
         templateInputTextArea.setWrapStyleWord(false);
         templateInputTextArea.setHighlightCurrentLine(false);
-        templateInputScrollPane.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
-                        "Template"
-                )
-        );
+        templateInputScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Data input text area setup
         dataInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
@@ -241,12 +236,7 @@ public class TemplateEditor extends JFrame {
         dataInputTextArea.setLineWrap(false);
         dataInputTextArea.setWrapStyleWord(false);
         dataInputTextArea.setHighlightCurrentLine(false);
-        dataInputScrollPane.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
-                        "Data Model"
-                )
-        );
+        dataInputScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Expected fields text area setup
         expectedFieldsTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
@@ -255,12 +245,7 @@ public class TemplateEditor extends JFrame {
         expectedFieldsTextArea.setLineWrap(false);
         expectedFieldsTextArea.setWrapStyleWord(false);
         expectedFieldsTextArea.setHighlightCurrentLine(false);
-        expectedFieldsScrollPane.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
-                        "Expected fields"
-                )
-        );
+        expectedFieldsScrollPane.setBorder(BorderFactory.createEmptyBorder());
         expectedFieldsScrollPane.setFoldIndicatorEnabled(false);
         expectedFieldsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         expectedFieldsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -272,12 +257,7 @@ public class TemplateEditor extends JFrame {
         outputJsonTextArea.setLineWrap(true);
         outputJsonTextArea.setWrapStyleWord(true);
         outputJsonTextArea.setHighlightCurrentLine(false);
-        outputJsonScrollPane.setBorder(
-                BorderFactory.createTitledBorder(
-                        BorderFactory.createLineBorder(Color.GRAY, 1, true),
-                        "Rendered Result"
-                )
-        );
+        outputJsonScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Buttons setup
         validationResultLabel.setForeground(Color.GRAY);
@@ -289,11 +269,9 @@ public class TemplateEditor extends JFrame {
         dataBottomPanel.setLayout(new BoxLayout(dataBottomPanel, BoxLayout.X_AXIS));
         templateBottomPanel.setLayout(new BoxLayout(templateBottomPanel, BoxLayout.X_AXIS));
 
-
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
         setMinimumSize(new Dimension(600, 480));
-        //setExtendedState(JFrame.MAXIMIZED_BOTH);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1280, 720);
         setLocationRelativeTo(null);
@@ -322,9 +300,9 @@ public class TemplateEditor extends JFrame {
         templateBottomPanel.add(Box.createHorizontalGlue());
         templateBottomPanel.add(templatePositionLabel);
 
-        // Usa método utilitario para crear paneles de entrada
-        JPanel dataInputPanel = createInputPanel(dataFindReplaceBar, dataInputScrollPane, dataBottomPanel);
-        JPanel templateInputPanel = createInputPanel(templateFindReplaceBar, templateInputScrollPane, templateBottomPanel);
+        // Use utility method to create input panels
+        JPanel dataInputPanel = createInputPanelWithTitle("Data Model", dataFindReplacePanel, dataInputScrollPane, dataBottomPanel);
+        JPanel templateInputPanel = createInputPanelWithTitle("Template", templateFindReplacePanel, templateInputScrollPane, templateBottomPanel);
 
         rightPanel.add(dataInputPanel, BorderLayout.CENTER);
         leftPanel.add(templateInputPanel, BorderLayout.CENTER);
@@ -333,10 +311,15 @@ public class TemplateEditor extends JFrame {
         columnsPanel.add(leftPanel);
         columnsPanel.add(rightPanel);
 
+        // Expected fields panel with title
         JPanel expectedFieldsPanel = new JPanel(new BorderLayout());
-        expectedFieldsPanel.add(expectedFieldsFindReplaceBar, BorderLayout.NORTH);
-        expectedFieldsPanel.add(expectedFieldsScrollPane, BorderLayout.CENTER);
+        JLabel expectedFieldsTitle = createSectionTitleLabel("Expected fields");
+        expectedFieldsPanel.add(expectedFieldsTitle, BorderLayout.NORTH);
 
+        JPanel expectedFieldsCenter = new JPanel(new BorderLayout());
+        expectedFieldsCenter.add(expectedFieldsFindReplacePanel, BorderLayout.NORTH);
+        expectedFieldsCenter.add(expectedFieldsScrollPane, BorderLayout.CENTER);
+        expectedFieldsPanel.add(expectedFieldsCenter, BorderLayout.CENTER);
 
         // Validation panel addition
         validationPanel.setLayout(new BorderLayout(5, 5));
@@ -349,9 +332,15 @@ public class TemplateEditor extends JFrame {
         validationRightPanel.add(validateFieldsButton);
         validationPanel.add(validationRightPanel, BorderLayout.EAST);
 
+        // Output panel with title
         JPanel outputPanel = new JPanel(new BorderLayout());
-        outputPanel.add(outputFindReplaceBar, BorderLayout.NORTH);
-        outputPanel.add(outputJsonScrollPane, BorderLayout.CENTER);
+        JLabel outputTitle = createSectionTitleLabel("Rendered Result");
+        outputPanel.add(outputTitle, BorderLayout.NORTH);
+
+        JPanel outputCenter = new JPanel(new BorderLayout());
+        outputCenter.add(outputFindReplacePanel, BorderLayout.NORTH);
+        outputCenter.add(outputJsonScrollPane, BorderLayout.CENTER);
+        outputPanel.add(outputCenter, BorderLayout.CENTER);
 
         // Bottom panel addition
         bottomPanel.add(validationPanel, BorderLayout.NORTH);
@@ -382,6 +371,12 @@ public class TemplateEditor extends JFrame {
         buttonPanel.add(outputPositionLabel, BorderLayout.EAST);
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
+        // Keyboard shortcuts for showing/hiding find/replace bar
+        addFindReplaceKeyBindings(templateInputTextArea, templateFindReplacePanel);
+        addFindReplaceKeyBindings(dataInputTextArea, dataFindReplacePanel);
+        addFindReplaceKeyBindings(expectedFieldsTextArea, expectedFieldsFindReplacePanel);
+        addFindReplaceKeyBindings(outputJsonTextArea, outputFindReplacePanel);
+
         // Add to main panel
         mainPanel.add(columnsPanel, BorderLayout.CENTER);
         mainPanel.add(bottomPanel, BorderLayout.SOUTH);
@@ -393,15 +388,70 @@ public class TemplateEditor extends JFrame {
 
     }
 
-    // Método utilitario para crear paneles de entrada con barra superior y panel inferior opcional
-    private JPanel createInputPanel(JToolBar findReplaceBar, JScrollPane scrollPane, JPanel bottomPanel) {
+    // Utility to create input panel with top bar and optional bottom panel, now with title
+    private JPanel createInputPanelWithTitle(String title, JPanel findReplacePanel, JScrollPane scrollPane, JPanel bottomPanel) {
         JPanel panel = new JPanel(new BorderLayout());
-        panel.add(findReplaceBar, BorderLayout.NORTH);
-        panel.add(scrollPane, BorderLayout.CENTER);
+        JLabel titleLabel = createSectionTitleLabel(title);
+        panel.add(titleLabel, BorderLayout.NORTH);
+
+        // Wrap the scrollPane in a JPanel to ensure the center is always a JPanel
+        JPanel scrollPanel = new JPanel(new BorderLayout());
+        scrollPanel.add(scrollPane, BorderLayout.CENTER);
+
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(findReplacePanel, BorderLayout.NORTH);
+        centerPanel.add(scrollPanel, BorderLayout.CENTER);
+
+        // Add vertical space between scrollPane and bottomPanel if bottomPanel exists
         if (bottomPanel != null) {
-            panel.add(bottomPanel, BorderLayout.SOUTH);
+            JPanel southPanel = new JPanel(new BorderLayout());
+            southPanel.add(Box.createVerticalStrut(8), BorderLayout.NORTH); // 8px vertical space
+            southPanel.add(bottomPanel, BorderLayout.CENTER);
+            panel.add(centerPanel, BorderLayout.CENTER);
+            panel.add(southPanel, BorderLayout.SOUTH);
+        } else {
+            panel.add(centerPanel, BorderLayout.CENTER);
         }
         return panel;
+    }
+
+    // Utility to create a section title JLabel
+    private JLabel createSectionTitleLabel(String title) {
+        JLabel label = new JLabel(title);
+        label.setFont(label.getFont().deriveFont(Font.BOLD, 13f));
+        label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
+        return label;
+    }
+
+    // Keyboard shortcuts Ctrl+F/Ctrl+R to show/hide find/replace bar
+    private void addFindReplaceKeyBindings(RSyntaxTextArea area, FindReplacePanel panel) {
+        InputMap im = area.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap am = area.getActionMap();
+
+        im.put(KeyStroke.getKeyStroke("control F"), "showFindBar");
+        am.put("showFindBar", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                panel.showPanel(false);
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("control R"), "showReplaceBar");
+        am.put("showReplaceBar", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                panel.showPanel(true);
+            }
+        });
+
+        // Escape to close the bar if visible
+        im.put(KeyStroke.getKeyStroke("ESCAPE"), "hideFindReplaceBar");
+        am.put("hideFindReplaceBar", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (panel.isVisible()) panel.hidePanel();
+            }
+        });
     }
 
     public void paintComponents() {
@@ -409,231 +459,6 @@ public class TemplateEditor extends JFrame {
         // Apply theme and styles
         applyRSyntaxThemeToAllAreas(this);
 
-    }
-
-    // Helper to create a find/replace bar for a given RSyntaxTextArea
-    private JToolBar createFindReplaceBar(RSyntaxTextArea area) {
-        JToolBar bar = new JToolBar();
-        bar.setFloatable(false);
-
-        JTextField searchField = new JTextField(12);
-        searchField.setToolTipText("Text to search for");
-        JTextField replaceField = new JTextField(12);
-        replaceField.setToolTipText("Text to replace with");
-
-        JCheckBox regexCB = new JCheckBox();
-        regexCB.setToolTipText("Enable regular expression search");
-        regexCB.setText(".*");
-
-        JCheckBox matchCaseCB = new JCheckBox();
-        matchCaseCB.setToolTipText("Match case");
-        matchCaseCB.setText("Cc");
-
-        JLabel matchInfoLabel = new JLabel("0 de 0");
-        matchInfoLabel.setPreferredSize(new Dimension(60, 20));
-        matchInfoLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        // Estado para coincidencia resaltada
-        final int[] currentMatchIndex = {0}; // 1-based, 0 = ninguna resaltada
-
-        bar.add(new JLabel("Buscar: "));
-        bar.add(searchField);
-        bar.add(new JLabel("Reemplazar: "));
-        bar.add(replaceField);
-
-        // Flecha hacia arriba (↑): buscar anterior
-        JButton findPrevBtn = new JButton();
-        findPrevBtn.setIcon(UIManager.getIcon("Table.ascendingSortIcon"));
-        findPrevBtn.setToolTipText("Buscar anterior (↑)");
-        findPrevBtn.setText("");
-        findPrevBtn.addActionListener(e -> findOrReplaceAndHighlight(area, searchField, replaceField, regexCB, matchCaseCB, "findPrev", matchInfoLabel, findPrevBtn, currentMatchIndex));
-        bar.add(findPrevBtn);
-
-        // Flecha hacia abajo (↓): buscar siguiente
-        JButton findNextBtn = new JButton();
-        findNextBtn.setIcon(UIManager.getIcon("Table.descendingSortIcon"));
-        findNextBtn.setToolTipText("Buscar siguiente (↓)");
-        findNextBtn.setText("");
-        findNextBtn.addActionListener(e -> findOrReplaceAndHighlight(area, searchField, replaceField, regexCB, matchCaseCB, "findNext", matchInfoLabel, findNextBtn, currentMatchIndex));
-        bar.add(findNextBtn);
-
-        JButton replaceBtn = new JButton("Reemplazar");
-        replaceBtn.setToolTipText("Replace current occurrence");
-        replaceBtn.addActionListener(e -> findOrReplaceAndHighlight(area, searchField, replaceField, regexCB, matchCaseCB, "replace", matchInfoLabel, null, currentMatchIndex));
-        bar.add(replaceBtn);
-
-        JButton replaceAllBtn = new JButton("Reemplazar todo");
-        replaceAllBtn.setToolTipText("Replace all occurrences");
-        replaceAllBtn.addActionListener(e -> findOrReplaceAndHighlight(area, searchField, replaceField, regexCB, matchCaseCB, "replaceAll", matchInfoLabel, null, currentMatchIndex));
-        bar.add(replaceAllBtn);
-
-        bar.add(regexCB);
-        bar.add(matchCaseCB);
-        bar.add(Box.createHorizontalStrut(10));
-        bar.add(matchInfoLabel);
-
-        // Al cambiar búsqueda o texto, reinicia el contador visual
-        Runnable resetMatchInfo = () -> {
-            currentMatchIndex[0] = 0;
-            updateMatchInfoLabelStatic(matchInfoLabel, 0, getTotalMatches(area, searchField, regexCB, matchCaseCB));
-            area.select(0, 0); // Quita selección
-        };
-        addMatchInfoListeners(area, searchField, regexCB, matchCaseCB, resetMatchInfo);
-
-        return bar;
-    }
-
-    // Nueva función: búsqueda y resaltado visual, contador solo cambia al buscar
-    private void findOrReplaceAndHighlight(RSyntaxTextArea area, JTextField searchField, JTextField replaceField,
-                              JCheckBox regexCB, JCheckBox matchCaseCB, String action, JLabel matchInfoLabel, JButton triggerButton, int[] currentMatchIndex) {
-        String search = searchField.getText();
-        if (search.isEmpty()) {
-            updateMatchInfoLabelStatic(matchInfoLabel, 0, 0);
-            area.select(0, 0);
-            currentMatchIndex[0] = 0;
-            return;
-        }
-
-        org.fife.ui.rtextarea.SearchContext context = new org.fife.ui.rtextarea.SearchContext();
-        context.setSearchFor(search);
-        context.setReplaceWith(replaceField.getText());
-        context.setMatchCase(matchCaseCB.isSelected());
-        context.setRegularExpression(regexCB.isSelected());
-        boolean forward = !"findPrev".equals(action);
-        context.setSearchForward(forward);
-        context.setWholeWord(false);
-
-        java.util.List<int[]> matches = getAllMatches(area, context);
-        int total = matches.size();
-
-        if (total == 0) {
-            updateMatchInfoLabelStatic(matchInfoLabel, 0, 0);
-            area.select(0, 0);
-            currentMatchIndex[0] = 0;
-            if (triggerButton != null) showBalloonTooltip(triggerButton, "No se encontraron coincidencias");
-            return;
-        }
-
-        switch (action) {
-            case "findNext": {
-                int idx = currentMatchIndex[0];
-                idx = (idx < total) ? idx + 1 : 1; // Avanza, wrap
-                currentMatchIndex[0] = idx;
-                int[] m = matches.get(idx - 1);
-                area.select(m[0], m[1]);
-                updateMatchInfoLabelStatic(matchInfoLabel, idx, total);
-                // Si dimos la vuelta, muestra tooltip
-                if (idx == 1 && triggerButton != null) showBalloonTooltip(triggerButton, "Llegaste al final, continúa desde el inicio");
-                break;
-            }
-            case "findPrev": {
-                int idx = currentMatchIndex[0];
-                idx = (idx > 1) ? idx - 1 : total; // Retrocede, wrap
-                currentMatchIndex[0] = idx;
-                int[] m = matches.get(idx - 1);
-                area.select(m[0], m[1]);
-                updateMatchInfoLabelStatic(matchInfoLabel, idx, total);
-                // Si dimos la vuelta, muestra tooltip
-                if (idx == total && triggerButton != null) showBalloonTooltip(triggerButton, "Llegaste al inicio, continúa desde el final");
-                break;
-            }
-            case "replace": {
-                if (currentMatchIndex[0] < 1 || currentMatchIndex[0] > total) return;
-                int[] m = matches.get(currentMatchIndex[0] - 1);
-                area.select(m[0], m[1]);
-                area.replaceSelection(replaceField.getText());
-                // Recalcula matches y resalta la misma posición si posible
-                java.util.List<int[]> newMatches = getAllMatches(area, context);
-                int newTotal = newMatches.size();
-                int idx = Math.min(currentMatchIndex[0], newTotal);
-                currentMatchIndex[0] = idx;
-                if (newTotal > 0 && idx > 0) {
-                    int[] nm = newMatches.get(idx - 1);
-                    area.select(nm[0], nm[1]);
-                } else {
-                    area.select(0, 0);
-                    currentMatchIndex[0] = 0;
-                }
-                updateMatchInfoLabelStatic(matchInfoLabel, currentMatchIndex[0], newTotal);
-                break;
-            }
-            case "replaceAll": {
-                for (int i = total - 1; i >= 0; i--) {
-                    int[] m = matches.get(i);
-                    area.select(m[0], m[1]);
-                    area.replaceSelection(replaceField.getText());
-                }
-                area.select(0, 0);
-                currentMatchIndex[0] = 0;
-                updateMatchInfoLabelStatic(matchInfoLabel, 0, getAllMatches(area, context).size());
-                break;
-            }
-        }
-    }
-
-    // Añade listeners para actualizar el contador de coincidencias al cambiar búsqueda o texto
-    private void addMatchInfoListeners(RSyntaxTextArea area, JTextField searchField, JCheckBox regexCB, JCheckBox matchCaseCB, Runnable updateMatchInfo) {
-        javax.swing.event.DocumentListener docListener = new javax.swing.event.DocumentListener() {
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { updateMatchInfo.run(); }
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { updateMatchInfo.run(); }
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { updateMatchInfo.run(); }
-        };
-        searchField.getDocument().addDocumentListener(docListener);
-        area.getDocument().addDocumentListener(docListener);
-        regexCB.addActionListener(e -> updateMatchInfo.run());
-        matchCaseCB.addActionListener(e -> updateMatchInfo.run());
-    }
-
-    // Muestra un tooltip temporal tipo "balloon" sobre el botón
-    private void showBalloonTooltip(JButton button, String message) {
-        JToolTip tip = button.createToolTip();
-        tip.setTipText(message);
-
-        Point location = button.getLocationOnScreen();
-        SwingUtilities.convertPointFromScreen(location, button.getParent());
-
-        PopupFactory factory = PopupFactory.getSharedInstance();
-        Popup popup = factory.getPopup(button, tip, button.getLocationOnScreen().x, button.getLocationOnScreen().y - tip.getPreferredSize().height - 5);
-        popup.show();
-
-        // Oculta el tooltip después de 1.5 segundos
-        Timer timer = new Timer(1500, e -> popup.hide());
-        timer.setRepeats(false);
-        timer.start();
-    }
-
-    // Devuelve todas las coincidencias como lista de [start, end)
-    private java.util.List<int[]> getAllMatches(RSyntaxTextArea area, org.fife.ui.rtextarea.SearchContext context) {
-        String text = area.getText();
-        String search = context.getSearchFor();
-        boolean matchCase = context.getMatchCase();
-        boolean regex = context.isRegularExpression();
-
-        java.util.List<int[]> matches = new java.util.ArrayList<>();
-        if (search == null || search.isEmpty() || text.isEmpty()) return matches;
-
-        if (regex) {
-            try {
-                java.util.regex.Pattern pattern = matchCase
-                        ? java.util.regex.Pattern.compile(search)
-                        : java.util.regex.Pattern.compile(search, java.util.regex.Pattern.CASE_INSENSITIVE);
-                java.util.regex.Matcher matcher = pattern.matcher(text);
-                while (matcher.find()) {
-                    matches.add(new int[]{matcher.start(), matcher.end()});
-                }
-            } catch (Exception e) {
-                return matches;
-            }
-        } else {
-            String searchFor = matchCase ? search : search.toLowerCase();
-            String haystack = matchCase ? text : text.toLowerCase();
-            int idx = 0;
-            while ((idx = haystack.indexOf(searchFor, idx)) != -1) {
-                matches.add(new int[]{idx, idx + searchFor.length()});
-                idx += (!searchFor.isEmpty() ? searchFor.length() : 1);
-            }
-        }
-        return matches;
     }
 
     private void applyRSyntaxThemeToAllAreas(Component parent) {
@@ -646,21 +471,6 @@ public class TemplateEditor extends JFrame {
 
             }
         }
-    }
-
-    // Devuelve solo el total de coincidencias
-    private int getTotalMatches(RSyntaxTextArea area, JTextField searchField, JCheckBox regexCB, JCheckBox matchCaseCB) {
-        org.fife.ui.rtextarea.SearchContext context = new org.fife.ui.rtextarea.SearchContext();
-        context.setSearchFor(searchField.getText());
-        context.setMatchCase(matchCaseCB.isSelected());
-        context.setRegularExpression(regexCB.isSelected());
-        context.setWholeWord(false);
-        return getAllMatches(area, context).size();
-    }
-
-    // Actualiza el label del contador de coincidencias
-    private void updateMatchInfoLabelStatic(JLabel label, int current, int total) {
-        label.setText((Math.max(current, 0)) + " de " + total);
     }
 
     private void processTemplateOutput() {
