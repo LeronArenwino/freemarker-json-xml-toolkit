@@ -54,15 +54,19 @@ tasks.register('copyFlatlafNatives', Copy) {
             n.endsWith('.dll') || n.endsWith('.so') || n.endsWith('.dylib')
         }
     }
-    into layout.buildDirectory.dir("dist").get().asFile
+    into layout.buildDirectory.dir("libs").get().asFile
 }
+
+tasks.named('distZip').configure { dependsOn tasks.named('copyFlatlafNatives') }
+tasks.named('distTar').configure { dependsOn tasks.named('copyFlatlafNatives') }
+tasks.named('startScripts').configure { dependsOn tasks.named('copyFlatlafNatives') }
 
 tasks.register('dist', Copy) {
     dependsOn 'build', 'copyFlatlafNatives'
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from(jar)
-    from(layout.buildDirectory.dir("dist"))
-    into layout.buildDirectory.dir("dist").get().asFile
+    from(layout.buildDirectory.dir("libs"))
+    into layout.buildDirectory.dir("libs").get().asFile
 }
 
 dependencies {
