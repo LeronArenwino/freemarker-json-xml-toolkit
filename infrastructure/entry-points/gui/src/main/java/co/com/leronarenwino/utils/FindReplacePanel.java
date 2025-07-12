@@ -129,6 +129,10 @@ public class FindReplacePanel extends JPanel {
                 if (e.getKeyCode() == java.awt.event.KeyEvent.VK_ENTER && e.isShiftDown()) {
                     findPrev();
                 }
+                // Show replace bar if Ctrl+R is pressed while searchField is focused
+                if (e.getKeyCode() == java.awt.event.KeyEvent.VK_R && e.isControlDown()) {
+                    setReplaceMode(true);
+                }
             }
         });
 
@@ -211,14 +215,15 @@ public class FindReplacePanel extends JPanel {
         int total = matches.size();
         if (total == 0) {
             matchInfoLabel.setText("0 results");
-            area.select(0, 0);
             currentMatchIndex = 0;
         } else {
-            matchInfoLabel.setText(
-                (currentMatchIndex > 0 ? currentMatchIndex : 1) + "/" + total
-            );
-            if (currentMatchIndex > total) {
-                currentMatchIndex = total;
+            if (currentMatchIndex < 1 || currentMatchIndex > total) {
+                currentMatchIndex = 1;
+            }
+            matchInfoLabel.setText(currentMatchIndex + "/" + total);
+            // Only select and scroll to the current match if the search field is focused (not while editing the main area)
+            if (searchField.isFocusOwner()) {
+                scrollToCurrentMatch();
             }
         }
     }
@@ -229,8 +234,8 @@ public class FindReplacePanel extends JPanel {
             return;
         }
         currentMatchIndex = (currentMatchIndex < matches.size()) ? currentMatchIndex + 1 : 1;
-        int[] m = matches.get(currentMatchIndex - 1);
-        area.select(m[0], m[1]);
+        scrollToCurrentMatch();
+        searchField.requestFocusInWindow();
         matchInfoLabel.setText(currentMatchIndex + " of " + matches.size());
     }
 
@@ -240,9 +245,22 @@ public class FindReplacePanel extends JPanel {
             return;
         }
         currentMatchIndex = (currentMatchIndex > 1) ? currentMatchIndex - 1 : matches.size();
+        scrollToCurrentMatch();
+        searchField.requestFocusInWindow();
+        matchInfoLabel.setText(currentMatchIndex + " of " + matches.size());
+    }
+
+    // Utility method to select and scroll to the current match
+    private void scrollToCurrentMatch() {
+        if (matches.isEmpty() || currentMatchIndex < 1 || currentMatchIndex > matches.size()) return;
         int[] m = matches.get(currentMatchIndex - 1);
         area.select(m[0], m[1]);
-        matchInfoLabel.setText(currentMatchIndex + " of " + matches.size());
+        try {
+            Rectangle rect = area.modelToView2D(m[0]).getBounds();
+            if (rect != null) {
+                area.scrollRectToVisible(rect);
+            }
+        } catch (Exception ignore) {}
     }
 
     private void replace() {
