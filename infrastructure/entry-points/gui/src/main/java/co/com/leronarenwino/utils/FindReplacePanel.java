@@ -99,10 +99,7 @@ public class FindReplacePanel extends JPanel {
         // Listeners
         findPrevBtn.addActionListener(e -> findPrev());
         findNextBtn.addActionListener(e -> findNext());
-        replaceBtn.addActionListener(e -> {
-            replace();
-            findNext();
-        });
+        replaceBtn.addActionListener(e -> replace());
         replaceAllBtn.addActionListener(e -> replaceAll());
         closeBtn.addActionListener(e -> hidePanel());
 
@@ -140,10 +137,7 @@ public class FindReplacePanel extends JPanel {
         });
 
         // Enter in replace = replace current
-        replaceField.addActionListener(e -> {
-            replace();
-            findNext();
-        });
+        replaceField.addActionListener(e -> replace());
 
         // Escape closes the bar
         searchField.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "closeBar");
@@ -273,7 +267,13 @@ public class FindReplacePanel extends JPanel {
         int[] m = matches.get(currentMatchIndex - 1);
         area.select(m[0], m[1]);
         area.replaceSelection(replaceField.getText());
+        int prevIndex = currentMatchIndex;
         updateMatches();
+        if (!matches.isEmpty()) {
+            currentMatchIndex = Math.min(prevIndex, matches.size());
+            scrollToCurrentMatch();
+            matchInfoLabel.setText(currentMatchIndex + "/" + matches.size());
+        }
     }
 
     private void replaceAll() {
