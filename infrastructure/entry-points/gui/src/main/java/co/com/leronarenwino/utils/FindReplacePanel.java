@@ -99,7 +99,10 @@ public class FindReplacePanel extends JPanel {
         // Listeners
         findPrevBtn.addActionListener(e -> findPrev());
         findNextBtn.addActionListener(e -> findNext());
-        replaceBtn.addActionListener(e -> replace());
+        replaceBtn.addActionListener(e -> {
+            replace();
+            findNext();
+        });
         replaceAllBtn.addActionListener(e -> replaceAll());
         closeBtn.addActionListener(e -> hidePanel());
 
@@ -137,7 +140,10 @@ public class FindReplacePanel extends JPanel {
         });
 
         // Enter in replace = replace current
-        replaceField.addActionListener(e -> replace());
+        replaceField.addActionListener(e -> {
+            replace();
+            findNext();
+        });
 
         // Escape closes the bar
         searchField.getInputMap().put(KeyStroke.getKeyStroke("ESCAPE"), "closeBar");
@@ -235,8 +241,7 @@ public class FindReplacePanel extends JPanel {
         }
         currentMatchIndex = (currentMatchIndex < matches.size()) ? currentMatchIndex + 1 : 1;
         scrollToCurrentMatch();
-        searchField.requestFocusInWindow();
-        matchInfoLabel.setText(currentMatchIndex + " of " + matches.size());
+        matchInfoLabel.setText(currentMatchIndex + "/" + matches.size());
     }
 
     private void findPrev() {
@@ -247,7 +252,7 @@ public class FindReplacePanel extends JPanel {
         currentMatchIndex = (currentMatchIndex > 1) ? currentMatchIndex - 1 : matches.size();
         scrollToCurrentMatch();
         searchField.requestFocusInWindow();
-        matchInfoLabel.setText(currentMatchIndex + " of " + matches.size());
+        matchInfoLabel.setText(currentMatchIndex + "/" + matches.size());
     }
 
     // Utility method to select and scroll to the current match

@@ -109,6 +109,8 @@ public class TemplateEditor extends JFrame {
 
 
     public TemplateEditor() {
+        // Disable FlatLaf custom window decorations globally
+        System.setProperty("flatlaf.useWindowDecorations", "false");
 
         // Set default properties from file or create new ones
         setSettingsFromProperties(
