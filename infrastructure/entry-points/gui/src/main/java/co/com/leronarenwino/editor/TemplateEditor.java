@@ -82,6 +82,10 @@ public class TemplateEditor extends JFrame {
     private RSyntaxTextArea outputJsonTextArea;
     private RTextScrollPane outputJsonScrollPane;
 
+    // Button to toggle wrap in output area
+    private JButton toggleWrapButton;
+    private boolean isOutputWrapEnabled = false;
+
     // Caret position labels
     private JLabel templatePositionLabel;
     private JLabel dataPositionLabel;
@@ -187,6 +191,9 @@ public class TemplateEditor extends JFrame {
         outputJsonTextArea = new RSyntaxTextArea(12, 80);
         outputJsonScrollPane = new RTextScrollPane(outputJsonTextArea, true);
 
+        // Button to toggle wrap in output area
+        toggleWrapButton = new JButton();
+
         // Validation result label
         validationResultLabel = new JLabel("Validation result will appear here.");
 
@@ -256,8 +263,9 @@ public class TemplateEditor extends JFrame {
         outputJsonTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
         outputJsonTextArea.setCodeFoldingEnabled(false);
         outputJsonTextArea.setEditable(false);
-        outputJsonTextArea.setLineWrap(true);
-        outputJsonTextArea.setWrapStyleWord(true);
+        outputJsonTextArea.setLineWrap(isOutputWrapEnabled);
+        outputJsonTextArea.setWrapStyleWord(isOutputWrapEnabled);
+        toggleWrapButton.setToolTipText("Wrap");
         outputJsonTextArea.setHighlightCurrentLine(false);
         outputJsonScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
@@ -279,6 +287,7 @@ public class TemplateEditor extends JFrame {
         setLocationRelativeTo(null);
         setJMenuBar(menuBar);
         setContentPane(mainPanel);
+        setToggleWrapIcon();
 
     }
 
@@ -334,7 +343,7 @@ public class TemplateEditor extends JFrame {
         validationRightPanel.add(validateFieldsButton);
         validationPanel.add(validationRightPanel, BorderLayout.EAST);
 
-        // Output panel with title
+        // Output panel with toggle wrap
         JPanel outputPanel = new JPanel(new BorderLayout());
         JLabel outputTitle = createSectionTitleLabel("Rendered Result");
         outputPanel.add(outputTitle, BorderLayout.NORTH);
@@ -342,7 +351,17 @@ public class TemplateEditor extends JFrame {
         JPanel outputCenter = new JPanel(new BorderLayout());
         outputCenter.add(outputFindReplacePanel, BorderLayout.NORTH);
         outputCenter.add(outputJsonScrollPane, BorderLayout.CENTER);
+
+        JPanel outputSidePanel = new JPanel();
+        outputSidePanel.setLayout(new BoxLayout(outputSidePanel, BoxLayout.Y_AXIS));
+        outputSidePanel.add(Box.createVerticalStrut(8));
+        outputSidePanel.add(toggleWrapButton);
+        outputSidePanel.add(Box.createVerticalGlue());
+        outputPanel.add(outputSidePanel, BorderLayout.EAST);
+
         outputPanel.add(outputCenter, BorderLayout.CENTER);
+
+        toggleWrapButton.addActionListener(e -> toggleOutputWrap());
 
         // Bottom panel addition
         bottomPanel.add(validationPanel, BorderLayout.NORTH);
@@ -549,6 +568,7 @@ public class TemplateEditor extends JFrame {
     private void setTemplateToSingleLine() {
         String template = templateInputTextArea.getText();
         String singleLine = TemplateValidator.toSingleLine(template);
+        singleLine = singleLine.replaceAll("}>\\s+\\{", "}>{");
         templateInputTextArea.setText(singleLine);
     }
 
@@ -560,6 +580,21 @@ public class TemplateEditor extends JFrame {
             label.setText("Line: " + line + "  Column: " + column);
         } catch (Exception ex) {
             label.setText("Line: ?, Column: ?");
+        }
+    }
+
+    private void toggleOutputWrap() {
+        isOutputWrapEnabled = !isOutputWrapEnabled;
+        outputJsonTextArea.setLineWrap(isOutputWrapEnabled);
+        outputJsonTextArea.setWrapStyleWord(isOutputWrapEnabled);
+        setToggleWrapIcon();
+    }
+
+    private void setToggleWrapIcon() {
+        if (isOutputWrapEnabled) {
+            toggleWrapButton.setText("↵");
+        } else {
+            toggleWrapButton.setText("→");
         }
     }
 
