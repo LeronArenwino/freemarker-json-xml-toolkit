@@ -33,7 +33,12 @@ public class TemplateUtils {
         if (currentText.equals(lastFormatted)) return;
         try {
             String formatted = TemplateValidator.formatFlexibleJson(currentText);
-            textArea.setText(formatted);
+            textArea.beginAtomicEdit();
+            try {
+                textArea.setText(formatted);
+            } finally {
+                textArea.endAtomicEdit();
+            }
             updateLastFormatted.accept(formatted);
         } catch (Exception ex) {
             showCopyableErrorDialog(textArea, "Invalid JSON: " + ex.getMessage());
@@ -52,7 +57,12 @@ public class TemplateUtils {
 
         try {
             String formatted = TemplateValidator.formatFlexibleJson(currentText);
-            textArea.setText(formatted);
+            textArea.beginAtomicEdit();
+            try {
+                textArea.setText(formatted);
+            } finally {
+                textArea.endAtomicEdit();
+            }
             updateFormatted.accept(formatted);
         } catch (Exception ex) {
             String message = ex.getMessage();
