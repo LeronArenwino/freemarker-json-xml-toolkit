@@ -538,7 +538,12 @@ public class TemplateEditor extends JFrame {
     private void formatTemplateInputArea() {
         String template = templateInputTextArea.getText();
         String formatted = formatFreemarkerTemplateCombined(template);
-        templateInputTextArea.setText(formatted);
+        templateInputTextArea.beginAtomicEdit();
+        try {
+            templateInputTextArea.setText(formatted);
+        } finally {
+            templateInputTextArea.endAtomicEdit();
+        }
     }
 
     private void setTemplateToSingleLine() {
