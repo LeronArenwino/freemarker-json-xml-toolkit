@@ -20,6 +20,7 @@ package co.com.leronarenwino.editor;
 import co.com.leronarenwino.FreemarkerProcessor;
 import co.com.leronarenwino.TemplateValidator;
 import co.com.leronarenwino.settings.Settings;
+import co.com.leronarenwino.utils.CaretUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -60,19 +61,11 @@ public class TemplateEditor extends JFrame {
     private JButton validateFieldsButton;
     private JLabel validationResultLabel;
 
-    private JPanel dataBottomPanel;
-    private JButton validateDataModelButton;
-    private JPanel templateBottomPanel;
-    private JButton validateTemplateModelButton;
-    private JButton singleLineTemplateButton;
-
-    // Components for template input
-    private RSyntaxTextArea templateInputTextArea;
-    private RTextScrollPane templateInputScrollPane;
+    // Component for template input
+    private TemplatePanel templatePanel;
 
     // Components for data input
-    private RSyntaxTextArea dataInputTextArea;
-    private RTextScrollPane dataInputScrollPane;
+    private DataPanel dataPanel;
 
     // Components for expected fields
     private RSyntaxTextArea expectedFieldsTextArea;
@@ -87,8 +80,6 @@ public class TemplateEditor extends JFrame {
     private boolean isOutputWrapEnabled = false;
 
     // Caret position labels
-    private JLabel templatePositionLabel;
-    private JLabel dataPositionLabel;
     private JLabel outputPositionLabel;
 
     // Buttons for actions
@@ -172,16 +163,12 @@ public class TemplateEditor extends JFrame {
         validationPanel = new JPanel();
         buttonPanel = new JPanel(new BorderLayout(5, 5));
         centerButtonsPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
-        dataBottomPanel = new JPanel();
-        templateBottomPanel = new JPanel();
 
         // Template input
-        templateInputTextArea = new RSyntaxTextArea(10, 40);
-        templateInputScrollPane = new RTextScrollPane(templateInputTextArea, true);
+        templatePanel = TemplatePanel.getInstance();
 
         // Data input
-        dataInputTextArea = new RSyntaxTextArea(12, 40);
-        dataInputScrollPane = new RTextScrollPane(dataInputTextArea, true);
+        dataPanel = DataPanel.getInstance();
 
         // Expected fields input
         expectedFieldsTextArea = new RSyntaxTextArea(1, 40);
@@ -202,21 +189,16 @@ public class TemplateEditor extends JFrame {
         clearOutputButton = new JButton("Clear Output");
         formatJsonButton = new JButton("Format to JSON");
         validateFieldsButton = new JButton("Validate Output Fields");
-        validateDataModelButton = new JButton("Format to JSON");
-        validateTemplateModelButton = new JButton("Format Template");
-        singleLineTemplateButton = new JButton("Single Line");
 
         // Caret position labels
-        templatePositionLabel = new JLabel("Line: 1  Column: 1");
-        dataPositionLabel = new JLabel("Line: 1  Column: 1");
         outputPositionLabel = new JLabel("Line: 1  Column: 1");
 
         // Initialize arrays for easy access
-        textAreas = new RSyntaxTextArea[]{templateInputTextArea, dataInputTextArea, expectedFieldsTextArea, outputJsonTextArea};
+        textAreas = new RSyntaxTextArea[]{templatePanel.getTextArea(), dataPanel.getTextArea(), expectedFieldsTextArea, outputJsonTextArea};
 
         // Initialize find/replace bars (hidden by default)
-        templateFindReplacePanel = new FindReplacePanel(templateInputTextArea);
-        dataFindReplacePanel = new FindReplacePanel(dataInputTextArea);
+        templateFindReplacePanel = new FindReplacePanel(templatePanel.getTextArea());
+        dataFindReplacePanel = new FindReplacePanel(dataPanel.getTextArea());
         expectedFieldsFindReplacePanel = new FindReplacePanel(expectedFieldsTextArea);
         outputFindReplacePanel = new FindReplacePanel(outputJsonTextArea);
 
@@ -231,21 +213,6 @@ public class TemplateEditor extends JFrame {
         leftPanel.setLayout(new BorderLayout(5, 5));
         rightPanel.setLayout(new BorderLayout(5, 5));
 
-        // Template input text area setup
-        templateInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_HTML);
-        templateInputTextArea.setCodeFoldingEnabled(true);
-        templateInputTextArea.setLineWrap(false);
-        templateInputTextArea.setWrapStyleWord(false);
-        templateInputTextArea.setHighlightCurrentLine(false);
-        templateInputScrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-        // Data input text area setup
-        dataInputTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
-        dataInputTextArea.setCodeFoldingEnabled(true);
-        dataInputTextArea.setLineWrap(false);
-        dataInputTextArea.setWrapStyleWord(false);
-        dataInputTextArea.setHighlightCurrentLine(false);
-        dataInputScrollPane.setBorder(BorderFactory.createEmptyBorder());
 
         // Expected fields text area setup
         expectedFieldsTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
@@ -276,8 +243,7 @@ public class TemplateEditor extends JFrame {
 
         // Validation panel setup
         validationPanel.setLayout(new BoxLayout(validationPanel, BoxLayout.X_AXIS));
-        dataBottomPanel.setLayout(new BoxLayout(dataBottomPanel, BoxLayout.X_AXIS));
-        templateBottomPanel.setLayout(new BoxLayout(templateBottomPanel, BoxLayout.X_AXIS));
+        validateFieldsButton.setToolTipText("Validate Output Fields");
 
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
@@ -299,28 +265,12 @@ public class TemplateEditor extends JFrame {
         fileMenu.add(exitItem);
         menuBar.add(fileMenu);
 
-        // Data bottom panel addition
-        dataBottomPanel.add(validateDataModelButton);
-        dataBottomPanel.add(Box.createHorizontalGlue());
-        dataBottomPanel.add(dataPositionLabel);
-
-        // Template bottom panel addition
-        templateBottomPanel.add(validateTemplateModelButton);
-        templateBottomPanel.add(Box.createHorizontalStrut(10));
-        templateBottomPanel.add(singleLineTemplateButton);
-        templateBottomPanel.add(Box.createHorizontalGlue());
-        templateBottomPanel.add(templatePositionLabel);
-
-        // Use utility method to create input panels
-        JPanel dataInputPanel = createInputPanelWithTitle("Data Model", dataFindReplacePanel, dataInputScrollPane, dataBottomPanel);
-        JPanel templateInputPanel = createInputPanelWithTitle("Template", templateFindReplacePanel, templateInputScrollPane, templateBottomPanel);
-
-        rightPanel.add(dataInputPanel, BorderLayout.CENTER);
-        leftPanel.add(templateInputPanel, BorderLayout.CENTER);
+        // Add columns panel components
+        addLeftPanelComponents();
+        addRightPanelComponents();
 
         // Columns addition
-        columnsPanel.add(leftPanel);
-        columnsPanel.add(rightPanel);
+        addColumnsPanelComponents();
 
         // Expected fields panel with title
         JPanel expectedFieldsPanel = new JPanel(new BorderLayout());
@@ -374,9 +324,9 @@ public class TemplateEditor extends JFrame {
         });
 
         // Button actions
-        validateDataModelButton.addActionListener(e -> formatDataInputJson());
-        validateTemplateModelButton.addActionListener(e -> formatTemplateInputArea());
-        singleLineTemplateButton.addActionListener(e -> setTemplateToSingleLine());
+        dataPanel.getValidateDataModelButton().addActionListener(e -> formatDataInputJson());
+        templatePanel.getFormatTemplateButton().addActionListener(e -> formatTemplateInputArea());
+        templatePanel.getSingleLineButton().addActionListener(e -> setTemplateToSingleLine());
         formatJsonButton.addActionListener(e -> formatJsonOutput());
         processTemplateButton.addActionListener(e -> processTemplateOutput());
         clearOutputButton.addActionListener(e -> outputJsonTextArea.setText(""));
@@ -393,47 +343,39 @@ public class TemplateEditor extends JFrame {
         bottomPanel.add(buttonPanel, BorderLayout.SOUTH);
 
         // Keyboard shortcuts for showing/hiding find/replace bar
-        addFindReplaceKeyBindings(templateInputTextArea, templateFindReplacePanel);
-        addFindReplaceKeyBindings(dataInputTextArea, dataFindReplacePanel);
+        addFindReplaceKeyBindings(templatePanel.getTextArea(), templateFindReplacePanel);
+        addFindReplaceKeyBindings(dataPanel.getTextArea(), dataFindReplacePanel);
         addFindReplaceKeyBindings(expectedFieldsTextArea, expectedFieldsFindReplacePanel);
         addFindReplaceKeyBindings(outputJsonTextArea, outputFindReplacePanel);
 
         // Add to main panel
-        mainPanel.add(columnsPanel, BorderLayout.CENTER);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        addMainPanelComponents();
 
         // Add caret listeners to update position labels
-        templateInputTextArea.addCaretListener(e -> updateCaretPosition(templateInputTextArea, templatePositionLabel));
-        dataInputTextArea.addCaretListener(e -> updateCaretPosition(dataInputTextArea, dataPositionLabel));
         outputJsonTextArea.addCaretListener(e -> updateCaretPosition(outputJsonTextArea, outputPositionLabel));
 
     }
 
-    // Utility to create input panel with top bar and optional bottom panel, now with title
-    private JPanel createInputPanelWithTitle(String title, JPanel findReplacePanel, JScrollPane scrollPane, JPanel bottomPanel) {
-        JPanel panel = new JPanel(new BorderLayout());
-        JLabel titleLabel = createSectionTitleLabel(title);
-        panel.add(titleLabel, BorderLayout.NORTH);
+    // Groups and adds all main sections to the mainPanel
+    private void addMainPanelComponents() {
+        mainPanel.add(columnsPanel, BorderLayout.CENTER);
+        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+    }
 
-        // Wrap the scrollPane in a JPanel to ensure the center is always a JPanel
-        JPanel scrollPanel = new JPanel(new BorderLayout());
-        scrollPanel.add(scrollPane, BorderLayout.CENTER);
+    // Groups and adds left-side components (template area)
+    private void addLeftPanelComponents() {
+        leftPanel.add(templatePanel, BorderLayout.CENTER);
+    }
 
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.add(findReplacePanel, BorderLayout.NORTH);
-        centerPanel.add(scrollPanel, BorderLayout.CENTER);
+    // Groups and adds right-side components (data area)
+    private void addRightPanelComponents() {
+        rightPanel.add(dataPanel, BorderLayout.CENTER);
+    }
 
-        // Add vertical space between scrollPane and bottomPanel if bottomPanel exists
-        if (bottomPanel != null) {
-            JPanel southPanel = new JPanel(new BorderLayout());
-            southPanel.add(Box.createVerticalStrut(8), BorderLayout.NORTH); // 8px vertical space
-            southPanel.add(bottomPanel, BorderLayout.CENTER);
-            panel.add(centerPanel, BorderLayout.CENTER);
-            panel.add(southPanel, BorderLayout.SOUTH);
-        } else {
-            panel.add(centerPanel, BorderLayout.CENTER);
-        }
-        return panel;
+    // Groups and adds components to columnsPanel
+    private void addColumnsPanelComponents() {
+        columnsPanel.add(leftPanel);
+        columnsPanel.add(rightPanel);
     }
 
     // Utility to create a section title JLabel
@@ -495,7 +437,7 @@ public class TemplateEditor extends JFrame {
     }
 
     private void processTemplateOutput() {
-        String templateContent = templateInputTextArea.getText();
+        String templateContent = templatePanel.getTextArea().getText();
         try {
             Map<String, Object> dataModel = getDataModelFromInput();
             String output = templateValidator.processTemplate(templateContent, dataModel);
@@ -533,7 +475,7 @@ public class TemplateEditor extends JFrame {
     }
 
     private Map<String, Object> getDataModelFromInput() throws Exception {
-        String json = dataInputTextArea.getText().trim();
+        String json = dataPanel.getTextArea().getText().trim();
         return parseDataModel(json);
     }
 
@@ -544,7 +486,7 @@ public class TemplateEditor extends JFrame {
     private void formatDataInputJson() {
         formatJsonSafely(
                 this,
-                dataInputTextArea,
+                dataPanel.getTextArea(),
                 lastFormattedDataInput,
                 lastValidDataInput,
                 formatted -> {
@@ -555,32 +497,25 @@ public class TemplateEditor extends JFrame {
     }
 
     private void formatTemplateInputArea() {
-        String template = templateInputTextArea.getText();
+        String template = templatePanel.getTextArea().getText();
         String formatted = formatFreemarkerTemplateCombined(template);
-        templateInputTextArea.beginAtomicEdit();
+        templatePanel.getTextArea().beginAtomicEdit();
         try {
-            templateInputTextArea.setText(formatted);
+            templatePanel.getTextArea().setText(formatted);
         } finally {
-            templateInputTextArea.endAtomicEdit();
+            templatePanel.getTextArea().endAtomicEdit();
         }
     }
 
     private void setTemplateToSingleLine() {
-        String template = templateInputTextArea.getText();
+        String template = templatePanel.getTextArea().getText();
         String singleLine = TemplateValidator.toSingleLine(template);
         singleLine = singleLine.replaceAll("}>\\s+\\{", "}>{");
-        templateInputTextArea.setText(singleLine);
+        templatePanel.getTextArea().setText(singleLine);
     }
 
     private void updateCaretPosition(RSyntaxTextArea textArea, JLabel label) {
-        int caretPos = textArea.getCaretPosition();
-        try {
-            int line = textArea.getLineOfOffset(caretPos) + 1;
-            int column = caretPos - textArea.getLineStartOffset(line - 1) + 1;
-            label.setText("Line: " + line + "  Column: " + column);
-        } catch (Exception ex) {
-            label.setText("Line: ?, Column: ?");
-        }
+        CaretUtil.updateCaretPosition(textArea, label);
     }
 
     private void toggleOutputWrap() {
