@@ -99,4 +99,9 @@ public class OutputPanel extends EditorPanel {
     public JButton getProcessTemplateButton() {
         return processTemplateButton;
     }
+
+    @Override
+    protected void addReplaceKeyBinding() {
+        // No agregar binding para Ctrl+R - deshabilitar reemplazo en OutputPanel
+    }
 }

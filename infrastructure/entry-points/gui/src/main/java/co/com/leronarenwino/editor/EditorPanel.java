@@ -62,11 +62,15 @@ public abstract class EditorPanel extends JPanel {
         addComponents();
 
         textArea.addCaretListener(e -> updateCaretPosition());
-        addFindReplaceKeyBindings();
+        addFindKeyBinding();
+        addReplaceKeyBinding();
+        addEscapeKeyBinding();
     }
 
     protected abstract void initComponents();
+
     protected abstract void setComponents();
+
     protected abstract void addComponents();
 
     private void updateCaretPosition() {
@@ -77,7 +81,7 @@ public abstract class EditorPanel extends JPanel {
         return textArea;
     }
 
-    private void addFindReplaceKeyBindings() {
+    private void addFindKeyBinding() {
         InputMap im = textArea.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap am = textArea.getActionMap();
 
@@ -88,6 +92,12 @@ public abstract class EditorPanel extends JPanel {
                 findReplacePanel.showPanel(false);
             }
         });
+    }
+
+    protected void addReplaceKeyBinding() {
+        InputMap im = textArea.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap am = textArea.getActionMap();
+
 
         im.put(KeyStroke.getKeyStroke("control R"), "showReplaceBar");
         am.put("showReplaceBar", new AbstractAction() {
@@ -96,6 +106,11 @@ public abstract class EditorPanel extends JPanel {
                 findReplacePanel.showPanel(true);
             }
         });
+    }
+
+    private void addEscapeKeyBinding() {
+        InputMap im = textArea.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap am = textArea.getActionMap();
 
         im.put(KeyStroke.getKeyStroke("ESCAPE"), "hideFindReplaceBar");
         am.put("hideFindReplaceBar", new AbstractAction() {
