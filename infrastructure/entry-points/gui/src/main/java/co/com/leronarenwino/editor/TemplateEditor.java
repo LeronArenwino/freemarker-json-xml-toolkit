@@ -26,9 +26,11 @@ import utils.SettingsSingleton;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Map;
+import java.util.Properties;
 
 import static co.com.leronarenwino.TemplateValidator.formatFreemarkerTemplateCombined;
-import static co.com.leronarenwino.editor.TemplateUtils.*;
+import static co.com.leronarenwino.editor.TemplateUtils.formatJsonSafely;
+import static co.com.leronarenwino.editor.TemplateUtils.parseDataModel;
 import static co.com.leronarenwino.settings.Settings.PROPERTIES_FILE;
 import static utils.PropertiesManager.loadProperties;
 import static utils.SettingsSingleton.defaultAppProperties;
@@ -125,7 +127,7 @@ public class TemplateEditor extends JFrame {
         exitItem = new JMenuItem("Exit");
         openSettingsItem = new JMenuItem("Settings...");
         viewMenu = new JMenu("View");
-        toggleExpectedFieldsItem = new JCheckBoxMenuItem("Show Expected Fields Panel", true);
+        toggleExpectedFieldsItem = new JCheckBoxMenuItem("Show Expected Fields Panel", SettingsSingleton.isExpectedFieldsVisible());
 
         // Left, right, and options panels
         leftPanel = new JPanel();
@@ -199,11 +201,9 @@ public class TemplateEditor extends JFrame {
         // Toggle expected fields panel visibility
         toggleExpectedFieldsItem.addActionListener(e -> {
             boolean visible = toggleExpectedFieldsItem.isSelected();
-            expectedFieldsPanel.setVisible(visible);
-
-            // Revalidar el layout
-            bottomPanel.revalidate();
-            bottomPanel.repaint();
+            SettingsSingleton.setExpectedFieldsVisible(visible);
+            saveViewSettings();
+            toggleExpectedFieldsPanel(visible);
         });
 
         // Button actions
@@ -246,6 +246,9 @@ public class TemplateEditor extends JFrame {
 
         // Apply theme and styles
         applyRSyntaxThemeToAllAreas(this);
+
+        // Apply initial expected fields panel visibility from settings
+        toggleExpectedFieldsPanel(SettingsSingleton.isExpectedFieldsVisible());
 
     }
 
@@ -317,5 +320,15 @@ public class TemplateEditor extends JFrame {
         templatePanel.getTextArea().setText(singleLine);
     }
 
+    private void toggleExpectedFieldsPanel(boolean visible) {
+        expectedFieldsPanel.setVisible(visible);
+        bottomPanel.revalidate();
+        bottomPanel.repaint();
+    }
 
+    private void saveViewSettings() {
+        Properties props = loadProperties(PROPERTIES_FILE, defaultAppProperties());
+        props.setProperty(SettingsSingleton.EXPECTED_FIELDS_VISIBLE, String.valueOf(SettingsSingleton.isExpectedFieldsVisible()));
+        utils.PropertiesManager.saveProperties(PROPERTIES_FILE, props);
+    }
 }
