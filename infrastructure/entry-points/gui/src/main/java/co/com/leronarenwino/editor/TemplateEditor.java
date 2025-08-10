@@ -189,8 +189,8 @@ public class TemplateEditor extends JFrame {
         addColumnsPanelComponents();
 
         // Bottom panel addition
-        bottomPanel.add(expectedFieldsPanel, BorderLayout.NORTH);
         bottomPanel.add(outputPanel, BorderLayout.CENTER);
+        bottomPanel.add(expectedFieldsPanel, BorderLayout.SOUTH);
 
         // Button panel addition actions
         openSettingsItem.addActionListener(e -> {
