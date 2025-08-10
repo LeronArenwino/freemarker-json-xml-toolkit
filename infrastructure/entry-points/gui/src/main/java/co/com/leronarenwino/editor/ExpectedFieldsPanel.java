@@ -51,13 +51,13 @@ public class ExpectedFieldsPanel extends EditorPanel {
     }
 
     @Override
-    protected void addComponents(String labelText) {
+    protected void addComponents() {
         bottomPanel.add(Box.createHorizontalStrut(10));
         bottomPanel.add(validationResultLabel);
         bottomPanel.add(Box.createHorizontalStrut(10));
         bottomPanel.add(validateFieldsButton);
 
-        add(new JLabel(labelText), BorderLayout.NORTH);
+        add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }

@@ -33,9 +33,9 @@ public class TemplatePanel extends EditorPanel {
 
     @Override
     protected void initComponents() {
-        formatTemplateButton = new JButton("Format");
+        formatTemplateButton = new JButton("🔨");
         formatTemplateButton.setToolTipText("Format Template");
-        singleLineButton = new JButton("Single Line");
+        singleLineButton = new JButton("↔");
         singleLineButton.setToolTipText("Convert to Single Line");
     }
 
@@ -49,14 +49,12 @@ public class TemplatePanel extends EditorPanel {
     }
 
     @Override
-    protected void addComponents(String labelText) {
+    protected void addComponents() {
         bottomPanel.add(formatTemplateButton);
-        bottomPanel.add(Box.createHorizontalStrut(10));
         bottomPanel.add(singleLineButton);
         bottomPanel.add(Box.createHorizontalGlue());
-        bottomPanel.add(positionLabel);
 
-        add(new JLabel(labelText), BorderLayout.NORTH);
+        add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }

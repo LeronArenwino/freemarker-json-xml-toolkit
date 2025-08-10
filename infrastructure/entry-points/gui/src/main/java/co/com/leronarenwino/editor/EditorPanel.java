@@ -32,6 +32,8 @@ public abstract class EditorPanel extends JPanel {
     protected JPanel bottomPanel;
     protected FindReplacePanel findReplacePanel;
     protected JPanel centerPanel;
+    protected JPanel topPanel;
+    protected JLabel titleLabel;
 
     public EditorPanel(int rows, int cols, String labelText) {
         setLayout(new BorderLayout());
@@ -40,6 +42,12 @@ public abstract class EditorPanel extends JPanel {
         positionLabel = new JLabel("1:1");
         bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+
+        // Create title label and top panel
+        titleLabel = new JLabel(labelText);
+        topPanel = new JPanel(new BorderLayout());
+        topPanel.add(titleLabel, BorderLayout.WEST);
+        topPanel.add(positionLabel, BorderLayout.EAST);
 
         // Create find/replace panel
         findReplacePanel = new FindReplacePanel(textArea);
@@ -51,7 +59,7 @@ public abstract class EditorPanel extends JPanel {
 
         initComponents();
         setComponents();
-        addComponents(labelText);
+        addComponents();
 
         textArea.addCaretListener(e -> updateCaretPosition());
         addFindReplaceKeyBindings();
@@ -59,7 +67,7 @@ public abstract class EditorPanel extends JPanel {
 
     protected abstract void initComponents();
     protected abstract void setComponents();
-    protected abstract void addComponents(String labelText);
+    protected abstract void addComponents();
 
     private void updateCaretPosition() {
         CaretUtil.updateCaretPosition(textArea, positionLabel);

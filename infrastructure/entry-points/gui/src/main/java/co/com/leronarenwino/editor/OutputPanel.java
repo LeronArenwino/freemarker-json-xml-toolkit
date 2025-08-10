@@ -60,15 +60,14 @@ public class OutputPanel extends EditorPanel {
     }
 
     @Override
-    protected void addComponents(String labelText) {
+    protected void addComponents() {
         bottomPanel.add(processTemplateButton);
         bottomPanel.add(formatJsonButton);
         bottomPanel.add(clearOutputButton);
         bottomPanel.add(toggleWrapButton);
         bottomPanel.add(Box.createHorizontalGlue());
-        bottomPanel.add(positionLabel);
 
-        add(new JLabel(labelText), BorderLayout.NORTH);
+        add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
