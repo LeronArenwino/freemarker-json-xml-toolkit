@@ -76,7 +76,31 @@ public class ExpectedFieldsPanel extends EditorPanel {
         return validateFieldsButton;
     }
 
-    public JLabel getValidationResultLabel() {
-        return validationResultLabel;
+    public void validateFields(String output) {
+        if (output.contains("\\\"")) {
+            output = output.replace("\\\"", "\"");
+        }
+
+        String expectedFieldsText = textArea.getText();
+        if (expectedFieldsText.trim().isEmpty()) {
+            validationResultLabel.setText("No expected fields specified");
+            validationResultLabel.setForeground(Color.GRAY);
+            return;
+        }
+
+        String[] expectedFields = expectedFieldsText.split("\\s*,\\s*|\\s+");
+        try {
+            java.util.List<String> missing = TemplateUtils.validateFields(output, expectedFields);
+            if (missing.isEmpty()) {
+                validationResultLabel.setText("All expected fields are present");
+                validationResultLabel.setForeground(new java.awt.Color(0, 128, 0));
+            } else {
+                validationResultLabel.setText("Missing fields: " + String.join(", ", missing));
+                validationResultLabel.setForeground(java.awt.Color.RED);
+            }
+        } catch (Exception e) {
+            validationResultLabel.setText("Invalid JSON output");
+            validationResultLabel.setForeground(java.awt.Color.RED);
+        }
     }
 }

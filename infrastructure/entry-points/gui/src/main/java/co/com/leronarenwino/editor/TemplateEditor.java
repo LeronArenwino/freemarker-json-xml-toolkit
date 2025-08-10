@@ -274,29 +274,7 @@ public class TemplateEditor extends JFrame {
 
     private void validateOutputFields() {
         String output = outputPanel.getTextArea().getText();
-        if (output.contains("\\\"")) {
-            output = output.replace("\\\"", "\"");
-        }
-        String expectedFieldsText = expectedFieldsPanel.getTextArea().getText();
-        if (expectedFieldsText.trim().isEmpty()) {
-            expectedFieldsPanel.getValidationResultLabel().setText("No expected fields specified");
-            expectedFieldsPanel.getValidationResultLabel().setForeground(Color.GRAY);
-            return;
-        }
-        String[] expectedFields = expectedFieldsText.split("\\s*,\\s*|\\s+");
-        try {
-            java.util.List<String> missing = validateFields(output, expectedFields);
-            if (missing.isEmpty()) {
-                expectedFieldsPanel.getValidationResultLabel().setText("All expected fields are present");
-                expectedFieldsPanel.getValidationResultLabel().setForeground(new java.awt.Color(0, 128, 0));
-            } else {
-                expectedFieldsPanel.getValidationResultLabel().setText("Missing fields: " + String.join(", ", missing));
-                expectedFieldsPanel.getValidationResultLabel().setForeground(java.awt.Color.RED);
-            }
-        } catch (Exception e) {
-            expectedFieldsPanel.getValidationResultLabel().setText("Invalid JSON output");
-            expectedFieldsPanel.getValidationResultLabel().setForeground(java.awt.Color.RED);
-        }
+        expectedFieldsPanel.validateFields(output);
     }
 
     private Map<String, Object> getDataModelFromInput() throws Exception {
