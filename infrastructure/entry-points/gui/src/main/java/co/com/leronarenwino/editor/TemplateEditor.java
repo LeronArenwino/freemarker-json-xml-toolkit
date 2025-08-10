@@ -279,7 +279,7 @@ public class TemplateEditor extends JFrame {
         }
         String expectedFieldsText = expectedFieldsPanel.getTextArea().getText();
         if (expectedFieldsText.trim().isEmpty()) {
-            expectedFieldsPanel.getValidationResultLabel().setText("No expected fields specified.");
+            expectedFieldsPanel.getValidationResultLabel().setText("No expected fields specified");
             expectedFieldsPanel.getValidationResultLabel().setForeground(Color.GRAY);
             return;
         }
@@ -287,14 +287,14 @@ public class TemplateEditor extends JFrame {
         try {
             java.util.List<String> missing = validateFields(output, expectedFields);
             if (missing.isEmpty()) {
-                expectedFieldsPanel.getValidationResultLabel().setText("All expected fields are present.");
+                expectedFieldsPanel.getValidationResultLabel().setText("All expected fields are present");
                 expectedFieldsPanel.getValidationResultLabel().setForeground(new java.awt.Color(0, 128, 0));
             } else {
                 expectedFieldsPanel.getValidationResultLabel().setText("Missing fields: " + String.join(", ", missing));
                 expectedFieldsPanel.getValidationResultLabel().setForeground(java.awt.Color.RED);
             }
         } catch (Exception e) {
-            expectedFieldsPanel.getValidationResultLabel().setText("Invalid JSON output.");
+            expectedFieldsPanel.getValidationResultLabel().setText("Invalid JSON output");
             expectedFieldsPanel.getValidationResultLabel().setForeground(java.awt.Color.RED);
         }
     }

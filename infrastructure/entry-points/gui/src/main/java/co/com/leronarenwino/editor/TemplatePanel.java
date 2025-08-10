@@ -28,7 +28,7 @@ public class TemplatePanel extends EditorPanel {
     private JButton singleLineButton;
 
     private TemplatePanel() {
-        super(10, 40, "Template");
+        super(8, 40, "Template");
     }
 
     @Override

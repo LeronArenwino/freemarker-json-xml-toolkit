@@ -33,8 +33,9 @@ public class ExpectedFieldsPanel extends EditorPanel {
 
     @Override
     protected void initComponents() {
-        validateFieldsButton = new JButton("Validate Output Fields");
-        validationResultLabel = new JLabel("Validation result will appear here.");
+        validateFieldsButton = new JButton("🔍");
+        validateFieldsButton.setToolTipText("Validate Expected Fields");
+        validationResultLabel = new JLabel("Validation result will appear here");
         validationResultLabel.setForeground(Color.GRAY);
     }
 

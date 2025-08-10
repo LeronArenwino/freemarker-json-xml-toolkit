@@ -40,13 +40,13 @@ public class OutputPanel extends EditorPanel {
         toggleWrapButton.setToolTipText("Toggle line wrap");
         toggleWrapButton.addActionListener(e -> toggleWrap());
 
-        processTemplateButton = new JButton("Evaluate Template");
+        processTemplateButton = new JButton("▶");
         processTemplateButton.setToolTipText("Evaluate the template with data");
 
-        formatJsonButton = new JButton("Format to JSON");
+        formatJsonButton = new JButton("🔨");
         formatJsonButton.setToolTipText("Format output as JSON");
 
-        clearOutputButton = new JButton("Clear Output");
+        clearOutputButton = new JButton("×");
         clearOutputButton.setToolTipText("Clear output area");
     }
 

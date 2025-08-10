@@ -27,12 +27,12 @@ public class DataPanel extends EditorPanel {
     private JButton validateDataModelButton;
 
     private DataPanel() {
-        super(12, 40, "Data Model");
+        super(8, 40, "Data Model");
     }
 
     @Override
     protected void initComponents() {
-        validateDataModelButton = new JButton("▶️");
+        validateDataModelButton = new JButton("🔨");
         validateDataModelButton.setToolTipText("Format Data Model JSON");
     }
 
