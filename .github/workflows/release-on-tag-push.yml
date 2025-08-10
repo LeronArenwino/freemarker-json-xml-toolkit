@@ -1,7 +1,7 @@
 name: Release JAR on tag push
 
 on:
-  create:
+  push:
     tags:
       - '*.*.*'
 
