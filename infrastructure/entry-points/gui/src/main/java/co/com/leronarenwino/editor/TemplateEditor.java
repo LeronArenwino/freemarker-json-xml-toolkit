@@ -22,7 +22,6 @@ import co.com.leronarenwino.TemplateValidator;
 import co.com.leronarenwino.settings.Settings;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import utils.SettingsSingleton;
-import co.com.leronarenwino.utils.FindReplacePanel;
 
 import javax.swing.*;
 import java.awt.*;
@@ -69,12 +68,6 @@ public class TemplateEditor extends JFrame {
     private String lastValidDataInput;
 
     private RSyntaxTextArea[] textAreas;
-
-    // Find/replace panels per area
-    private FindReplacePanel templateFindReplacePanel;
-    private FindReplacePanel dataFindReplacePanel;
-    private FindReplacePanel expectedFieldsFindReplacePanel;
-    private FindReplacePanel outputFindReplacePanel;
 
     private final TemplateValidator templateValidator = new TemplateValidator(new FreemarkerProcessor());
 
@@ -151,12 +144,6 @@ public class TemplateEditor extends JFrame {
         // Initialize arrays for easy access
         textAreas = new RSyntaxTextArea[]{templatePanel.getTextArea(), dataPanel.getTextArea(), expectedFieldsPanel.getTextArea(), outputPanel.getTextArea()};
 
-        // Initialize find/replace bars (hidden by default)
-        templateFindReplacePanel = new FindReplacePanel(templatePanel.getTextArea());
-        dataFindReplacePanel = new FindReplacePanel(dataPanel.getTextArea());
-        expectedFieldsFindReplacePanel = new FindReplacePanel(expectedFieldsPanel.getTextArea());
-        outputFindReplacePanel = new FindReplacePanel(outputPanel.getTextArea());
-
     }
 
     public void setComponents() {
@@ -198,11 +185,6 @@ public class TemplateEditor extends JFrame {
         JPanel expectedFieldsPanelContainer = new JPanel(new BorderLayout());
         expectedFieldsPanelContainer.add(expectedFieldsPanel, BorderLayout.CENTER);
 
-        JPanel expectedFieldsCenter = new JPanel(new BorderLayout());
-        expectedFieldsCenter.add(expectedFieldsFindReplacePanel, BorderLayout.NORTH);
-        expectedFieldsCenter.add(expectedFieldsPanel.getTextArea(), BorderLayout.CENTER);
-        expectedFieldsPanel.add(expectedFieldsCenter, BorderLayout.CENTER);
-
 
         // Bottom panel addition
         bottomPanel.add(expectedFieldsPanel, BorderLayout.NORTH);
@@ -222,13 +204,6 @@ public class TemplateEditor extends JFrame {
         outputPanel.getFormatJsonButton().addActionListener(e -> formatJsonOutput());
         outputPanel.getClearOutputButton().addActionListener(e -> outputPanel.getTextArea().setText(""));
         expectedFieldsPanel.getValidateFieldsButton().addActionListener(e -> validateOutputFields());
-
-
-        // Keyboard shortcuts for showing/hiding find/replace bar
-        addFindReplaceKeyBindings(templatePanel.getTextArea(), templateFindReplacePanel);
-        addFindReplaceKeyBindings(dataPanel.getTextArea(), dataFindReplacePanel);
-        addFindReplaceKeyBindings(expectedFieldsPanel.getTextArea(), expectedFieldsFindReplacePanel);
-        addFindReplaceKeyBindings(outputPanel.getTextArea(), outputFindReplacePanel);
 
         // Add to main panel
         addMainPanelComponents();
@@ -255,37 +230,6 @@ public class TemplateEditor extends JFrame {
     private void addColumnsPanelComponents() {
         columnsPanel.add(leftPanel);
         columnsPanel.add(rightPanel);
-    }
-
-    // Keyboard shortcuts Ctrl+F/Ctrl+R to show/hide find/replace bar
-    private void addFindReplaceKeyBindings(RSyntaxTextArea area, FindReplacePanel panel) {
-        InputMap im = area.getInputMap(JComponent.WHEN_FOCUSED);
-        ActionMap am = area.getActionMap();
-
-        im.put(KeyStroke.getKeyStroke("control F"), "showFindBar");
-        am.put("showFindBar", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                panel.showPanel(false);
-            }
-        });
-
-        im.put(KeyStroke.getKeyStroke("control R"), "showReplaceBar");
-        am.put("showReplaceBar", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                panel.showPanel(true);
-            }
-        });
-
-        // Escape to close the bar if visible
-        im.put(KeyStroke.getKeyStroke("ESCAPE"), "hideFindReplaceBar");
-        am.put("hideFindReplaceBar", new AbstractAction() {
-            @Override
-            public void actionPerformed(java.awt.event.ActionEvent e) {
-                if (panel.isVisible()) panel.hidePanel();
-            }
-        });
     }
 
     public void paintComponents() {

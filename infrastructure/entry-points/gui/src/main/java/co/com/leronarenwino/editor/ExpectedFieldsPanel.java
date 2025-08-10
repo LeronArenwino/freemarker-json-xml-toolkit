@@ -45,7 +45,6 @@ public class ExpectedFieldsPanel extends EditorPanel {
         textArea.setCodeFoldingEnabled(true);
         textArea.setWrapStyleWord(false);
         textArea.setHighlightCurrentLine(false);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
         scrollPane.setFoldIndicatorEnabled(false);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
@@ -59,7 +58,7 @@ public class ExpectedFieldsPanel extends EditorPanel {
         bottomPanel.add(validateFieldsButton);
 
         add(new JLabel(labelText), BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 

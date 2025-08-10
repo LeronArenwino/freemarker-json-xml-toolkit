@@ -52,7 +52,7 @@ public class DataPanel extends EditorPanel {
         bottomPanel.add(positionLabel);
 
         add(new JLabel(labelText), BorderLayout.NORTH);
-        add(scrollPane, BorderLayout.CENTER);
+        add(centerPanel, BorderLayout.CENTER);
         add(bottomPanel, BorderLayout.SOUTH);
     }
 

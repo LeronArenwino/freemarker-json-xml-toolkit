@@ -18,6 +18,7 @@
 package co.com.leronarenwino.editor;
 
 import co.com.leronarenwino.utils.CaretUtil;
+import co.com.leronarenwino.utils.FindReplacePanel;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
@@ -29,6 +30,8 @@ public abstract class EditorPanel extends JPanel {
     protected RTextScrollPane scrollPane;
     protected JLabel positionLabel;
     protected JPanel bottomPanel;
+    protected FindReplacePanel findReplacePanel;
+    protected JPanel centerPanel;
 
     public EditorPanel(int rows, int cols, String labelText) {
         setLayout(new BorderLayout());
@@ -38,11 +41,20 @@ public abstract class EditorPanel extends JPanel {
         bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
 
+        // Create find/replace panel
+        findReplacePanel = new FindReplacePanel(textArea);
+
+        // Create center panel to hold find/replace and scroll pane
+        centerPanel = new JPanel(new BorderLayout());
+        centerPanel.add(findReplacePanel, BorderLayout.NORTH);
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+
         initComponents();
         setComponents();
         addComponents(labelText);
 
         textArea.addCaretListener(e -> updateCaretPosition());
+        addFindReplaceKeyBindings();
     }
 
     protected abstract void initComponents();
@@ -55,5 +67,36 @@ public abstract class EditorPanel extends JPanel {
 
     public RSyntaxTextArea getTextArea() {
         return textArea;
+    }
+
+    private void addFindReplaceKeyBindings() {
+        InputMap im = textArea.getInputMap(JComponent.WHEN_FOCUSED);
+        ActionMap am = textArea.getActionMap();
+
+        im.put(KeyStroke.getKeyStroke("control F"), "showFindBar");
+        am.put("showFindBar", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                findReplacePanel.showPanel(false);
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("control R"), "showReplaceBar");
+        am.put("showReplaceBar", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                findReplacePanel.showPanel(true);
+            }
+        });
+
+        im.put(KeyStroke.getKeyStroke("ESCAPE"), "hideFindReplaceBar");
+        am.put("hideFindReplaceBar", new AbstractAction() {
+            @Override
+            public void actionPerformed(java.awt.event.ActionEvent e) {
+                if (findReplacePanel.isVisible()) {
+                    findReplacePanel.hidePanel();
+                }
+            }
+        });
     }
 }
