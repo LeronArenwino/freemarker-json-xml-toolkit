@@ -46,6 +46,8 @@ public class TemplatePanel extends EditorPanel {
         textArea.setLineWrap(false);
         textArea.setWrapStyleWord(false);
         textArea.setHighlightCurrentLine(false);
+
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
     }
 
     @Override
@@ -56,7 +58,7 @@ public class TemplatePanel extends EditorPanel {
 
         add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.EAST);
     }
 
     public static TemplatePanel getInstance() {

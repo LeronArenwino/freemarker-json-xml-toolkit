@@ -57,6 +57,8 @@ public class OutputPanel extends EditorPanel {
         textArea.setLineWrap(isWrapEnabled);
         textArea.setWrapStyleWord(isWrapEnabled);
         textArea.setHighlightCurrentLine(false);
+
+        bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
     }
 
     @Override
@@ -69,7 +71,7 @@ public class OutputPanel extends EditorPanel {
 
         add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.EAST);
     }
 
     public void toggleWrap() {

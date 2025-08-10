@@ -43,6 +43,8 @@ public class TemplateEditor extends JFrame {
     private JMenu fileMenu;
     private JMenuItem exitItem;
     private JMenuItem openSettingsItem;
+    private JMenu viewMenu;
+    private JCheckBoxMenuItem toggleExpectedFieldsItem;
 
     // Panels for layout
     private JPanel columnsPanel;
@@ -122,6 +124,8 @@ public class TemplateEditor extends JFrame {
         fileMenu = new JMenu("File");
         exitItem = new JMenuItem("Exit");
         openSettingsItem = new JMenuItem("Settings...");
+        viewMenu = new JMenu("View");
+        toggleExpectedFieldsItem = new JCheckBoxMenuItem("Show Expected Fields Panel", true);
 
         // Left, right, and options panels
         leftPanel = new JPanel();
@@ -139,7 +143,6 @@ public class TemplateEditor extends JFrame {
 
         // Output/result area
         outputPanel = OutputPanel.getInstance();
-
 
         // Initialize arrays for easy access
         textAreas = new RSyntaxTextArea[]{templatePanel.getTextArea(), dataPanel.getTextArea(), expectedFieldsPanel.getTextArea(), outputPanel.getTextArea()};
@@ -172,7 +175,9 @@ public class TemplateEditor extends JFrame {
         fileMenu.add(openSettingsItem);
         fileMenu.addSeparator();
         fileMenu.add(exitItem);
+        viewMenu.add(toggleExpectedFieldsItem);
         menuBar.add(fileMenu);
+        menuBar.add(viewMenu);
 
         // Add columns panel components
         addLeftPanelComponents();
@@ -180,11 +185,6 @@ public class TemplateEditor extends JFrame {
 
         // Columns addition
         addColumnsPanelComponents();
-
-        // Expected fields panel with title
-        JPanel expectedFieldsPanelContainer = new JPanel(new BorderLayout());
-        expectedFieldsPanelContainer.add(expectedFieldsPanel, BorderLayout.CENTER);
-
 
         // Bottom panel addition
         bottomPanel.add(expectedFieldsPanel, BorderLayout.NORTH);
@@ -194,6 +194,16 @@ public class TemplateEditor extends JFrame {
         openSettingsItem.addActionListener(e -> {
             Settings settingsDialog = new Settings(this);
             settingsDialog.setVisible(true);
+        });
+
+        // Toggle expected fields panel visibility
+        toggleExpectedFieldsItem.addActionListener(e -> {
+            boolean visible = toggleExpectedFieldsItem.isSelected();
+            expectedFieldsPanel.setVisible(visible);
+
+            // Revalidar el layout
+            bottomPanel.revalidate();
+            bottomPanel.repaint();
         });
 
         // Button actions

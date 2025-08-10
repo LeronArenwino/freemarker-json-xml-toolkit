@@ -48,6 +48,8 @@ public class ExpectedFieldsPanel extends EditorPanel {
         scrollPane.setFoldIndicatorEnabled(false);
         scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
         scrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        positionLabel.setEnabled(false);
+        positionLabel.setVisible(false);
     }
 
     @Override
@@ -59,7 +61,7 @@ public class ExpectedFieldsPanel extends EditorPanel {
 
         add(topPanel, BorderLayout.NORTH);
         add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.SOUTH);
+        add(bottomPanel, BorderLayout.EAST);
     }
 
     public static ExpectedFieldsPanel getInstance() {
