@@ -21,8 +21,6 @@ import co.com.leronarenwino.FreemarkerProcessor;
 import co.com.leronarenwino.TemplateValidator;
 import co.com.leronarenwino.settings.Settings;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
-import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
-import org.fife.ui.rtextarea.RTextScrollPane;
 import utils.SettingsSingleton;
 import co.com.leronarenwino.utils.FindReplacePanel;
 
@@ -53,11 +51,6 @@ public class TemplateEditor extends JFrame {
     private JPanel rightPanel;
     private JPanel bottomPanel;
 
-    // Panel for validation
-    private JPanel validationPanel;
-    private JButton validateFieldsButton;
-    private JLabel validationResultLabel;
-
     // Component for template input
     private TemplatePanel templatePanel;
 
@@ -65,8 +58,7 @@ public class TemplateEditor extends JFrame {
     private DataPanel dataPanel;
 
     // Components for expected fields
-    private RSyntaxTextArea expectedFieldsTextArea;
-    private RTextScrollPane expectedFieldsScrollPane;
+    private ExpectedFieldsPanel expectedFieldsPanel;
 
     // Components for output/result area
     private OutputPanel outputPanel;
@@ -143,9 +135,6 @@ public class TemplateEditor extends JFrame {
         rightPanel = new JPanel();
         bottomPanel = new JPanel(new BorderLayout(5, 5));
 
-        // Validation and button panels
-        validationPanel = new JPanel();
-
         // Template input
         templatePanel = TemplatePanel.getInstance();
 
@@ -153,25 +142,19 @@ public class TemplateEditor extends JFrame {
         dataPanel = DataPanel.getInstance();
 
         // Expected fields input
-        expectedFieldsTextArea = new RSyntaxTextArea(1, 40);
-        expectedFieldsScrollPane = new RTextScrollPane(expectedFieldsTextArea, false);
+        expectedFieldsPanel = ExpectedFieldsPanel.getInstance();
 
         // Output/result area
         outputPanel = OutputPanel.getInstance();
 
-        // Validation result label
-        validationResultLabel = new JLabel("Validation result will appear here.");
-
-        validateFieldsButton = new JButton("Validate Output Fields");
-
 
         // Initialize arrays for easy access
-        textAreas = new RSyntaxTextArea[]{templatePanel.getTextArea(), dataPanel.getTextArea(), expectedFieldsTextArea, outputPanel.getTextArea()};
+        textAreas = new RSyntaxTextArea[]{templatePanel.getTextArea(), dataPanel.getTextArea(), expectedFieldsPanel.getTextArea(), outputPanel.getTextArea()};
 
         // Initialize find/replace bars (hidden by default)
         templateFindReplacePanel = new FindReplacePanel(templatePanel.getTextArea());
         dataFindReplacePanel = new FindReplacePanel(dataPanel.getTextArea());
-        expectedFieldsFindReplacePanel = new FindReplacePanel(expectedFieldsTextArea);
+        expectedFieldsFindReplacePanel = new FindReplacePanel(expectedFieldsPanel.getTextArea());
         outputFindReplacePanel = new FindReplacePanel(outputPanel.getTextArea());
 
     }
@@ -184,28 +167,6 @@ public class TemplateEditor extends JFrame {
         // Left and right panels setup
         leftPanel.setLayout(new BorderLayout(5, 5));
         rightPanel.setLayout(new BorderLayout(5, 5));
-
-
-        // Expected fields text area setup
-        expectedFieldsTextArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_NONE);
-        expectedFieldsTextArea.setLineWrap(false);
-        expectedFieldsTextArea.setCodeFoldingEnabled(true);
-        expectedFieldsTextArea.setLineWrap(false);
-        expectedFieldsTextArea.setWrapStyleWord(false);
-        expectedFieldsTextArea.setHighlightCurrentLine(false);
-        expectedFieldsScrollPane.setBorder(BorderFactory.createEmptyBorder());
-        expectedFieldsScrollPane.setFoldIndicatorEnabled(false);
-        expectedFieldsScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        expectedFieldsScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-
-        // Buttons setup
-        validationResultLabel.setForeground(Color.GRAY);
-        validationResultLabel.setVerticalAlignment(SwingConstants.CENTER);
-        validationResultLabel.setHorizontalAlignment(SwingConstants.CENTER);
-
-        // Validation panel setup
-        validationPanel.setLayout(new BoxLayout(validationPanel, BoxLayout.X_AXIS));
-        validateFieldsButton.setToolTipText("Validate Output Fields");
 
         // Set default configuration to JFrame
         setTitle("FreeMarker JSON/XML Toolkit (Apache FreeMarker 2.3.34)");
@@ -234,29 +195,17 @@ public class TemplateEditor extends JFrame {
         addColumnsPanelComponents();
 
         // Expected fields panel with title
-        JPanel expectedFieldsPanel = new JPanel(new BorderLayout());
-        JLabel expectedFieldsTitle = createSectionTitleLabel();
-        expectedFieldsPanel.add(expectedFieldsTitle, BorderLayout.NORTH);
+        JPanel expectedFieldsPanelContainer = new JPanel(new BorderLayout());
+        expectedFieldsPanelContainer.add(expectedFieldsPanel, BorderLayout.CENTER);
 
         JPanel expectedFieldsCenter = new JPanel(new BorderLayout());
         expectedFieldsCenter.add(expectedFieldsFindReplacePanel, BorderLayout.NORTH);
-        expectedFieldsCenter.add(expectedFieldsScrollPane, BorderLayout.CENTER);
+        expectedFieldsCenter.add(expectedFieldsPanel.getTextArea(), BorderLayout.CENTER);
         expectedFieldsPanel.add(expectedFieldsCenter, BorderLayout.CENTER);
-
-        // Validation panel addition
-        validationPanel.setLayout(new BorderLayout(5, 5));
-        validationPanel.add(expectedFieldsPanel, BorderLayout.CENTER);
-        JPanel validationRightPanel = new JPanel();
-        validationRightPanel.setLayout(new BoxLayout(validationRightPanel, BoxLayout.X_AXIS));
-        validationRightPanel.add(Box.createHorizontalStrut(10));
-        validationRightPanel.add(validationResultLabel);
-        validationRightPanel.add(Box.createHorizontalStrut(10));
-        validationRightPanel.add(validateFieldsButton);
-        validationPanel.add(validationRightPanel, BorderLayout.EAST);
 
 
         // Bottom panel addition
-        bottomPanel.add(validationPanel, BorderLayout.NORTH);
+        bottomPanel.add(expectedFieldsPanel, BorderLayout.NORTH);
         bottomPanel.add(outputPanel, BorderLayout.CENTER);
 
         // Button panel addition actions
@@ -272,13 +221,13 @@ public class TemplateEditor extends JFrame {
         outputPanel.getProcessTemplateButton().addActionListener(e -> processTemplateOutput());
         outputPanel.getFormatJsonButton().addActionListener(e -> formatJsonOutput());
         outputPanel.getClearOutputButton().addActionListener(e -> outputPanel.getTextArea().setText(""));
-        validateFieldsButton.addActionListener(e -> validateOutputFields());
+        expectedFieldsPanel.getValidateFieldsButton().addActionListener(e -> validateOutputFields());
 
 
         // Keyboard shortcuts for showing/hiding find/replace bar
         addFindReplaceKeyBindings(templatePanel.getTextArea(), templateFindReplacePanel);
         addFindReplaceKeyBindings(dataPanel.getTextArea(), dataFindReplacePanel);
-        addFindReplaceKeyBindings(expectedFieldsTextArea, expectedFieldsFindReplacePanel);
+        addFindReplaceKeyBindings(expectedFieldsPanel.getTextArea(), expectedFieldsFindReplacePanel);
         addFindReplaceKeyBindings(outputPanel.getTextArea(), outputFindReplacePanel);
 
         // Add to main panel
@@ -306,14 +255,6 @@ public class TemplateEditor extends JFrame {
     private void addColumnsPanelComponents() {
         columnsPanel.add(leftPanel);
         columnsPanel.add(rightPanel);
-    }
-
-    // Utility to create a section title JLabel
-    private JLabel createSectionTitleLabel() {
-        JLabel label = new JLabel("Expected fields");
-        label.setFont(label.getFont().deriveFont(Font.BOLD, 13f));
-        label.setBorder(BorderFactory.createEmptyBorder(2, 4, 2, 4));
-        return label;
     }
 
     // Keyboard shortcuts Ctrl+F/Ctrl+R to show/hide find/replace bar
@@ -382,25 +323,25 @@ public class TemplateEditor extends JFrame {
         if (output.contains("\\\"")) {
             output = output.replace("\\\"", "\"");
         }
-        String expectedFieldsText = expectedFieldsTextArea.getText();
+        String expectedFieldsText = expectedFieldsPanel.getTextArea().getText();
         if (expectedFieldsText.trim().isEmpty()) {
-            validationResultLabel.setText("No expected fields specified.");
-            validationResultLabel.setForeground(Color.GRAY);
+            expectedFieldsPanel.getValidationResultLabel().setText("No expected fields specified.");
+            expectedFieldsPanel.getValidationResultLabel().setForeground(Color.GRAY);
             return;
         }
         String[] expectedFields = expectedFieldsText.split("\\s*,\\s*|\\s+");
         try {
             java.util.List<String> missing = validateFields(output, expectedFields);
             if (missing.isEmpty()) {
-                validationResultLabel.setText("All expected fields are present.");
-                validationResultLabel.setForeground(new java.awt.Color(0, 128, 0));
+                expectedFieldsPanel.getValidationResultLabel().setText("All expected fields are present.");
+                expectedFieldsPanel.getValidationResultLabel().setForeground(new java.awt.Color(0, 128, 0));
             } else {
-                validationResultLabel.setText("Missing fields: " + String.join(", ", missing));
-                validationResultLabel.setForeground(java.awt.Color.RED);
+                expectedFieldsPanel.getValidationResultLabel().setText("Missing fields: " + String.join(", ", missing));
+                expectedFieldsPanel.getValidationResultLabel().setForeground(java.awt.Color.RED);
             }
         } catch (Exception e) {
-            validationResultLabel.setText("Invalid JSON output.");
-            validationResultLabel.setForeground(java.awt.Color.RED);
+            expectedFieldsPanel.getValidationResultLabel().setText("Invalid JSON output.");
+            expectedFieldsPanel.getValidationResultLabel().setForeground(java.awt.Color.RED);
         }
     }
 
