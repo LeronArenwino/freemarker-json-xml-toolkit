@@ -44,6 +44,7 @@ public abstract class EditorPanel extends JPanel {
         positionLabel = new JLabel("1:1");
         bottomPanel = new JPanel();
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.X_AXIS));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         // Create title label and top panel
         titleLabel = new JLabel(labelText);

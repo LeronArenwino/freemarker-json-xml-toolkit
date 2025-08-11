@@ -189,6 +189,11 @@ public class Settings extends JDialog {
                 // Update UI for all windows
                 SwingUtilities.updateComponentTreeUI(getParent());
                 SwingUtilities.updateComponentTreeUI(this);
+
+                // Update the JSplitPane specifically
+                if (getParent() instanceof co.com.leronarenwino.editor.TemplateEditor editor) {
+                    SwingUtilities.invokeLater(editor::updateSplitPaneUI);
+                }
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(this, "Failed to apply theme: " + ex.getMessage());
             }
@@ -241,6 +246,8 @@ public class Settings extends JDialog {
         if (getParent() instanceof co.com.leronarenwino.editor.TemplateEditor editor) {
             editor.paintComponents();
             editor.repaint();
+
+            SwingUtilities.invokeLater(editor::updateSplitPaneUI);
         }
     }
 

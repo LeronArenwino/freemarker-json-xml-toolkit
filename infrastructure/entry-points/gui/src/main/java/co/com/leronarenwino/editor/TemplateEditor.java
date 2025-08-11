@@ -169,7 +169,7 @@ public class TemplateEditor extends JFrame {
         // Main split pane setup
         mainSplitPane.setTopComponent(columnsPanel);
         mainSplitPane.setBottomComponent(bottomPanel);
-        mainSplitPane.setDividerSize(3);
+        mainSplitPane.setDividerSize(1);
         mainSplitPane.setOneTouchExpandable(false);
 
         mainSplitPane.setBorder(null);
@@ -360,4 +360,28 @@ public class TemplateEditor extends JFrame {
         props.setProperty(SettingsSingleton.EXPECTED_FIELDS_VISIBLE, String.valueOf(SettingsSingleton.isExpectedFieldsVisible()));
         utils.PropertiesManager.saveProperties(PROPERTIES_FILE, props);
     }
+
+    public void updateSplitPaneUI() {
+        mainSplitPane.setUI(new javax.swing.plaf.basic.BasicSplitPaneUI() {
+            @Override
+            public javax.swing.plaf.basic.BasicSplitPaneDivider createDefaultDivider() {
+                return new javax.swing.plaf.basic.BasicSplitPaneDivider(this) {
+                    @Override
+                    public void paint(Graphics g) {
+                        // Obtener el color dinámicamente
+                        Color dividerColor = UIManager.getColor("Component.borderColor");
+                        if (dividerColor == null) {
+                            dividerColor = UIManager.getColor("Separator.foreground");
+                        }
+                        if (dividerColor == null) {
+                            dividerColor = Color.GRAY;
+                        }
+                        g.setColor(dividerColor);
+                        g.fillRect(0, 0, getSize().width, getSize().height);
+                    }
+                };
+            }
+        });
+    }
+
 }
