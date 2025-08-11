@@ -388,10 +388,4 @@ public class TemplateEditor extends JFrame {
         });
     }
 
-    /**
-     * Método público para reaplicar estilos cuando cambia el tema
-     */
-    public void reapplyButtonStyles() {
-        ButtonStyleUtil.applyFlatLafButtonStyles();
-    }
 }
