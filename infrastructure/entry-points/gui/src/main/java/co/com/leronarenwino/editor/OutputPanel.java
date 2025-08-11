@@ -31,7 +31,7 @@ public class OutputPanel extends EditorPanel {
     private boolean isWrapEnabled = false;
 
     private OutputPanel() {
-        super(12, 80, "Rendered Result");
+        super("Rendered Result");
     }
 
     @Override

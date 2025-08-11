@@ -28,7 +28,7 @@ public class ExpectedFieldsPanel extends EditorPanel {
     private JLabel validationResultLabel;
 
     private ExpectedFieldsPanel() {
-        super(1, 40, "Expected fields");
+        super("Expected fields");
     }
 
     @Override

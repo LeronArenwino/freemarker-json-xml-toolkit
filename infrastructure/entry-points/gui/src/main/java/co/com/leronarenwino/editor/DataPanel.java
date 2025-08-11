@@ -27,7 +27,7 @@ public class DataPanel extends EditorPanel {
     private JButton validateDataModelButton;
 
     private DataPanel() {
-        super(8, 40, "Data Model");
+        super("Data Model");
     }
 
     @Override

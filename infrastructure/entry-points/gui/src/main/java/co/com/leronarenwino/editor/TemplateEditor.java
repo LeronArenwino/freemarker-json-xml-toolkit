@@ -54,6 +54,8 @@ public class TemplateEditor extends JFrame {
     private JPanel rightPanel;
     private JPanel bottomPanel;
 
+    private JSplitPane mainSplitPane;
+
     // Component for template input
     private TemplatePanel templatePanel;
 
@@ -119,7 +121,7 @@ public class TemplateEditor extends JFrame {
 
         // Main panels
         mainPanel = new JPanel(new BorderLayout(10, 10));
-        columnsPanel = new JPanel(new GridLayout(1, 2, 10, 0));
+        columnsPanel = new JPanel(new GridLayout(1, 2, 5, 5));
 
         // Menu bar and menu items
         menuBar = new JMenuBar();
@@ -149,12 +151,40 @@ public class TemplateEditor extends JFrame {
         // Initialize arrays for easy access
         textAreas = new RSyntaxTextArea[]{templatePanel.getTextArea(), dataPanel.getTextArea(), expectedFieldsPanel.getTextArea(), outputPanel.getTextArea()};
 
+        mainSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, true);
+        mainSplitPane.setResizeWeight(0.6);
+        mainSplitPane.setContinuousLayout(true);
+        mainSplitPane.setBorder(null);
+
     }
 
     public void setComponents() {
 
         // Main setup
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        columnsPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        bottomPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
+        // Main split pane setup
+        mainSplitPane.setTopComponent(columnsPanel);
+        mainSplitPane.setBottomComponent(bottomPanel);
+        mainSplitPane.setDividerSize(3);
+        mainSplitPane.setOneTouchExpandable(false);
+
+        mainSplitPane.setBorder(null);
+        mainSplitPane.setUI(new javax.swing.plaf.basic.BasicSplitPaneUI() {
+            @Override
+            public javax.swing.plaf.basic.BasicSplitPaneDivider createDefaultDivider() {
+                return new javax.swing.plaf.basic.BasicSplitPaneDivider(this) {
+                    @Override
+                    public void paint(Graphics g) {
+                        g.setColor(UIManager.getColor("Component.borderColor"));
+                        g.fillRect(0, 0, getSize().width, getSize().height);
+                    }
+                };
+            }
+        });
 
         // Left and right panels setup
         leftPanel.setLayout(new BorderLayout(5, 5));
@@ -222,8 +252,7 @@ public class TemplateEditor extends JFrame {
 
     // Groups and adds all main sections to the mainPanel
     private void addMainPanelComponents() {
-        mainPanel.add(columnsPanel, BorderLayout.CENTER);
-        mainPanel.add(bottomPanel, BorderLayout.SOUTH);
+        mainPanel.add(mainSplitPane, BorderLayout.CENTER);
     }
 
     // Groups and adds left-side components (template area)

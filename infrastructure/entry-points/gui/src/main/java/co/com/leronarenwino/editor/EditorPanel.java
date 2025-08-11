@@ -35,9 +35,9 @@ public abstract class EditorPanel extends JPanel {
     protected JPanel topPanel;
     protected JLabel titleLabel;
 
-    public EditorPanel(int rows, int cols, String labelText) {
+    public EditorPanel(String labelText) {
         setLayout(new BorderLayout());
-        textArea = new RSyntaxTextArea(rows, cols);
+        textArea = new RSyntaxTextArea();
         scrollPane = new RTextScrollPane(textArea, true);
         positionLabel = new JLabel("1:1");
         bottomPanel = new JPanel();
