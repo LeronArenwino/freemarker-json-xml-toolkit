@@ -206,6 +206,17 @@ public class FindReplacePanel extends JPanel {
         if (!replaceMode) replaceBar.setVisible(false);
     }
 
+    public void setSearchText(String text) {
+        searchField.setText(text);
+        searchField.selectAll();
+        updateMatches();
+    }
+
+    public void setReplaceText(String text) {
+        replaceField.setText(text);
+        replaceField.selectAll();
+    }
+
     private void updateMatches() {
         String search = searchField.getText();
         String text = area.getText();

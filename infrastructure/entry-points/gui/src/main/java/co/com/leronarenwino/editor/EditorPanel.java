@@ -89,7 +89,12 @@ public abstract class EditorPanel extends JPanel {
         am.put("showFindBar", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                String selectedText = textArea.getSelectedText();
                 findReplacePanel.showPanel(false);
+
+                if (selectedText != null && !selectedText.trim().isEmpty()) {
+                    findReplacePanel.setSearchText(selectedText);
+                }
             }
         });
     }
@@ -98,12 +103,16 @@ public abstract class EditorPanel extends JPanel {
         InputMap im = textArea.getInputMap(JComponent.WHEN_FOCUSED);
         ActionMap am = textArea.getActionMap();
 
-
         im.put(KeyStroke.getKeyStroke("control R"), "showReplaceBar");
         am.put("showReplaceBar", new AbstractAction() {
             @Override
             public void actionPerformed(java.awt.event.ActionEvent e) {
+                String selectedText = textArea.getSelectedText();
                 findReplacePanel.showPanel(true);
+
+                if (selectedText != null && !selectedText.trim().isEmpty()) {
+                    findReplacePanel.setReplaceText(selectedText);
+                }
             }
         });
     }
