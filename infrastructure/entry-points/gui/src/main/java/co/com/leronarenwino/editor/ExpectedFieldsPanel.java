@@ -59,10 +59,6 @@ public class ExpectedFieldsPanel extends EditorPanel {
         bottomPanel.add(validationResultLabel);
         bottomPanel.add(Box.createHorizontalStrut(10));
         bottomPanel.add(validateFieldsButton);
-
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.EAST);
     }
 
     public static ExpectedFieldsPanel getInstance() {

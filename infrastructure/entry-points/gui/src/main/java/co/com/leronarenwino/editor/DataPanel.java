@@ -40,8 +40,8 @@ public class DataPanel extends EditorPanel {
     protected void setComponents() {
         textArea.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_JSON);
         textArea.setCodeFoldingEnabled(true);
-        textArea.setLineWrap(false);
-        textArea.setWrapStyleWord(false);
+        textArea.setLineWrap(isWrapEnabled);
+        textArea.setWrapStyleWord(isWrapEnabled);
         textArea.setHighlightCurrentLine(false);
 
         bottomPanel.setLayout(new BoxLayout(bottomPanel, BoxLayout.Y_AXIS));
@@ -50,11 +50,7 @@ public class DataPanel extends EditorPanel {
     @Override
     protected void addComponents() {
         bottomPanel.add(validateDataModelButton);
-        bottomPanel.add(Box.createHorizontalGlue());
-
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.EAST);
+        bottomPanel.add(toggleWrapButton);
     }
 
     public static DataPanel getInstance() {

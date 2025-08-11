@@ -34,6 +34,8 @@ public abstract class EditorPanel extends JPanel {
     protected JPanel centerPanel;
     protected JPanel topPanel;
     protected JLabel titleLabel;
+    protected JButton toggleWrapButton;
+    protected boolean isWrapEnabled = false;
 
     public EditorPanel(String labelText) {
         setLayout(new BorderLayout());
@@ -57,14 +59,31 @@ public abstract class EditorPanel extends JPanel {
         centerPanel.add(findReplacePanel, BorderLayout.NORTH);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
 
+        // Initialize wrap button
+        toggleWrapButton = new JButton("→");
+        toggleWrapButton.setToolTipText("Toggle line wrap");
+        toggleWrapButton.addActionListener(e -> toggleWrap());
+
         initComponents();
         setComponents();
         addComponents();
+
+        bottomPanel.add(Box.createHorizontalGlue());
+        add(topPanel, BorderLayout.NORTH);
+        add(centerPanel, BorderLayout.CENTER);
+        add(bottomPanel, BorderLayout.EAST);
 
         textArea.addCaretListener(e -> updateCaretPosition());
         addFindKeyBinding();
         addReplaceKeyBinding();
         addEscapeKeyBinding();
+    }
+
+    public void toggleWrap() {
+        isWrapEnabled = !isWrapEnabled;
+        textArea.setLineWrap(isWrapEnabled);
+        textArea.setWrapStyleWord(isWrapEnabled);
+        toggleWrapButton.setText(isWrapEnabled ? "↵" : "→");
     }
 
     protected abstract void initComponents();

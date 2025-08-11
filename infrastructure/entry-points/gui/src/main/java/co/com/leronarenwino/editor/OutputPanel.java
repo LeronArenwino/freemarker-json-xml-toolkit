@@ -67,11 +67,6 @@ public class OutputPanel extends EditorPanel {
         bottomPanel.add(formatJsonButton);
         bottomPanel.add(clearOutputButton);
         bottomPanel.add(toggleWrapButton);
-        bottomPanel.add(Box.createHorizontalGlue());
-
-        add(topPanel, BorderLayout.NORTH);
-        add(centerPanel, BorderLayout.CENTER);
-        add(bottomPanel, BorderLayout.EAST);
     }
 
     public void toggleWrap() {
