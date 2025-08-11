@@ -26,48 +26,74 @@ public class ButtonStyleUtil {
         PRIMARY, SUCCESS, DANGER, SECONDARY
     }
 
-    /**
-     * Configura los estilos globales de FlatLaf para botones semánticos
-     */
     public static void applyFlatLafButtonStyles() {
-        // Botones de peligro (destructivos)
-        UIManager.put("Button[danger].background", new Color(220, 53, 69));
-        UIManager.put("Button[danger].foreground", Color.WHITE);
-        UIManager.put("Button[danger].hoverBackground", new Color(200, 35, 51));
-        UIManager.put("Button[danger].pressedBackground", new Color(180, 25, 41));
+        // Estilos PRIMARY
+        UIManager.put("Button.primary.background", new Color(0, 123, 255));
+        UIManager.put("Button.primary.foreground", Color.WHITE);
+        UIManager.put("Button.primary.hoverBackground", new Color(0, 86, 179));
+        UIManager.put("Button.primary.pressedBackground", new Color(0, 86, 179));
+        UIManager.put("Button.primary.borderColor", new Color(0, 123, 255));
 
-        // Botones de éxito
-        UIManager.put("Button[success].background", new Color(40, 167, 69));
-        UIManager.put("Button[success].foreground", Color.WHITE);
-        UIManager.put("Button[success].hoverBackground", new Color(34, 142, 58));
-        UIManager.put("Button[success].pressedBackground", new Color(28, 117, 48));
+        // Estilos SUCCESS
+        UIManager.put("Button.success.background", new Color(40, 167, 69));
+        UIManager.put("Button.success.foreground", Color.WHITE);
+        UIManager.put("Button.success.hoverBackground", new Color(33, 136, 56));
+        UIManager.put("Button.success.pressedBackground", new Color(33, 136, 56));
+        UIManager.put("Button.success.borderColor", new Color(40, 167, 69));
 
-        // Botones primarios
-        UIManager.put("Button[primary].background", new Color(0, 123, 255));
-        UIManager.put("Button[primary].foreground", Color.WHITE);
-        UIManager.put("Button[primary].hoverBackground", new Color(0, 86, 179));
-        UIManager.put("Button[primary].pressedBackground", new Color(0, 69, 144));
+        // Estilos DANGER
+        UIManager.put("Button.danger.background", new Color(220, 53, 69));
+        UIManager.put("Button.danger.foreground", Color.WHITE);
+        UIManager.put("Button.danger.hoverBackground", new Color(200, 35, 51));
+        UIManager.put("Button.danger.pressedBackground", new Color(200, 35, 51));
+        UIManager.put("Button.danger.borderColor", new Color(220, 53, 69));
+
+        // Estilos SECONDARY
+        UIManager.put("Button.secondary.background", new Color(108, 117, 125));
+        UIManager.put("Button.secondary.foreground", Color.WHITE);
+        UIManager.put("Button.secondary.hoverBackground", new Color(90, 98, 104));
+        UIManager.put("Button.secondary.pressedBackground", new Color(90, 98, 104));
+        UIManager.put("Button.secondary.borderColor", new Color(108, 117, 125));
     }
 
-    /**
-     * Crea un botón con estilo semántico usando FlatLaf
-     */
     public static JButton createStyledButton(String text, String tooltip, ButtonStyle style) {
         JButton button = new JButton(text);
         button.setToolTipText(tooltip);
-        applyStyle(button, style);
-        return button;
-    }
 
-    /**
-     * Aplica un estilo a un botón existente
-     */
-    public static void applyStyle(JButton button, ButtonStyle style) {
         switch (style) {
-            case PRIMARY -> button.putClientProperty("JButton.styleClass", "primary");
-            case SUCCESS -> button.putClientProperty("JButton.styleClass", "success");
-            case DANGER -> button.putClientProperty("JButton.styleClass", "danger");
-            case SECONDARY -> button.putClientProperty("JButton.buttonType", "borderless");
+            case PRIMARY:
+                button.putClientProperty("FlatLaf.style",
+                        "background: $Button.primary.background; " +
+                                "foreground: $Button.primary.foreground; " +
+                                "hoverBackground: $Button.primary.hoverBackground; " +
+                                "pressedBackground: $Button.primary.pressedBackground; " +
+                                "borderColor: $Button.primary.borderColor");
+                break;
+            case SUCCESS:
+                button.putClientProperty("FlatLaf.style",
+                        "background: $Button.success.background; " +
+                                "foreground: $Button.success.foreground; " +
+                                "hoverBackground: $Button.success.hoverBackground; " +
+                                "pressedBackground: $Button.success.pressedBackground; " +
+                                "borderColor: $Button.success.borderColor");
+                break;
+            case DANGER:
+                button.putClientProperty("FlatLaf.style",
+                        "background: $Button.danger.background; " +
+                                "foreground: $Button.danger.foreground; " +
+                                "hoverBackground: $Button.danger.hoverBackground; " +
+                                "pressedBackground: $Button.danger.pressedBackground; " +
+                                "borderColor: $Button.danger.borderColor");
+                break;
+            case SECONDARY:
+                button.putClientProperty("FlatLaf.style",
+                        "background: $Button.secondary.background; " +
+                                "foreground: $Button.secondary.foreground; " +
+                                "hoverBackground: $Button.secondary.hoverBackground; " +
+                                "pressedBackground: $Button.secondary.pressedBackground; " +
+                                "borderColor: $Button.secondary.borderColor");
+                break;
         }
+        return button;
     }
 }

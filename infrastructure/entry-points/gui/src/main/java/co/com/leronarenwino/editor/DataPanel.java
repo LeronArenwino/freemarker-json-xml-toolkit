@@ -51,6 +51,7 @@ public class DataPanel extends EditorPanel {
     @Override
     protected void addComponents() {
         bottomPanel.add(validateDataModelButton);
+        bottomPanel.add(Box.createVerticalStrut(5));
         bottomPanel.add(toggleWrapButton);
     }
 

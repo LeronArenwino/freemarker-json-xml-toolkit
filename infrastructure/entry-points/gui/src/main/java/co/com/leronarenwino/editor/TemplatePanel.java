@@ -54,7 +54,9 @@ public class TemplatePanel extends EditorPanel {
     @Override
     protected void addComponents() {
         bottomPanel.add(formatTemplateButton);
+        bottomPanel.add(Box.createVerticalStrut(5));
         bottomPanel.add(singleLineButton);
+        bottomPanel.add(Box.createVerticalStrut(5));
         bottomPanel.add(toggleWrapButton);
     }
 

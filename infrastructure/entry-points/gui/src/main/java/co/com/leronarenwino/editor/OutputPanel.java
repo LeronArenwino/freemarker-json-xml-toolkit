@@ -57,8 +57,11 @@ public class OutputPanel extends EditorPanel {
     @Override
     protected void addComponents() {
         bottomPanel.add(processTemplateButton);
+        bottomPanel.add(Box.createVerticalStrut(5));
         bottomPanel.add(formatJsonButton);
+        bottomPanel.add(Box.createVerticalStrut(5));
         bottomPanel.add(clearOutputButton);
+        bottomPanel.add(Box.createVerticalStrut(5));
         bottomPanel.add(toggleWrapButton);
     }
 
