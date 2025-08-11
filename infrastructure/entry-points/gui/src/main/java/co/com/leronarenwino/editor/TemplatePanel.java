@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.editor;
 
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import javax.swing.*;
@@ -33,9 +34,9 @@ public class TemplatePanel extends EditorPanel {
 
     @Override
     protected void initComponents() {
-        formatTemplateButton = new JButton("🔨");
+        formatTemplateButton = createStyledButton("🔨", "Format Template", ButtonStyleUtil.ButtonStyle.SUCCESS);
+        singleLineButton = createStyledButton("↔", "Convert to Single Line", ButtonStyleUtil.ButtonStyle.SECONDARY);
         formatTemplateButton.setToolTipText("Format Template");
-        singleLineButton = new JButton("↔");
         singleLineButton.setToolTipText("Convert to Single Line");
     }
 

@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.settings;
 
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import utils.PropertiesManager;
 import utils.SettingsSingleton;
 
@@ -180,6 +181,8 @@ public class Settings extends JDialog {
         themeCombo.addActionListener(e -> {
             String selected = (String) themeCombo.getSelectedItem();
             try {
+                ButtonStyleUtil.applyFlatLafButtonStyles();
+
                 switch (Objects.requireNonNull(selected)) {
                     case "Flat Light" -> UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatLightLaf());
                     case "Flat Dark" -> UIManager.setLookAndFeel(new com.formdev.flatlaf.FlatDarkLaf());

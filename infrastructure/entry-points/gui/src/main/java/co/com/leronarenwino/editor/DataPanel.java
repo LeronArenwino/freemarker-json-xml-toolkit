@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.editor;
 
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import javax.swing.*;
@@ -32,7 +33,7 @@ public class DataPanel extends EditorPanel {
 
     @Override
     protected void initComponents() {
-        validateDataModelButton = new JButton("🔨");
+        validateDataModelButton = createStyledButton("🔨", "Format Data Model JSON", ButtonStyleUtil.ButtonStyle.SUCCESS);
         validateDataModelButton.setToolTipText("Format Data Model JSON");
     }
 

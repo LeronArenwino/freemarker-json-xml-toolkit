@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.editor;
 
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import javax.swing.*;
@@ -33,7 +34,7 @@ public class ExpectedFieldsPanel extends EditorPanel {
 
     @Override
     protected void initComponents() {
-        validateFieldsButton = new JButton("🔍");
+        validateFieldsButton = createStyledButton("🔍", "Validate Expected Fields", ButtonStyleUtil.ButtonStyle.PRIMARY);
         validateFieldsButton.setToolTipText("Validate Expected Fields");
         validationResultLabel = new JLabel("Validation result will appear here");
         validationResultLabel.setForeground(Color.GRAY);

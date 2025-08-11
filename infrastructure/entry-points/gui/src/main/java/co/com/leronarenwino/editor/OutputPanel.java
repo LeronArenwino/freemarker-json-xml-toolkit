@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.editor;
 
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import javax.swing.*;
@@ -27,8 +28,6 @@ public class OutputPanel extends EditorPanel {
     private JButton processTemplateButton;
     private JButton formatJsonButton;
     private JButton clearOutputButton;
-    private JButton toggleWrapButton;
-    private boolean isWrapEnabled = false;
 
     private OutputPanel() {
         super("Rendered Result");
@@ -36,17 +35,11 @@ public class OutputPanel extends EditorPanel {
 
     @Override
     protected void initComponents() {
-        toggleWrapButton = new JButton("→");
-        toggleWrapButton.setToolTipText("Toggle line wrap");
-        toggleWrapButton.addActionListener(e -> toggleWrap());
-
-        processTemplateButton = new JButton("▶");
+        processTemplateButton = createStyledButton("▶", "Evaluate the template with data", ButtonStyleUtil.ButtonStyle.PRIMARY);
+        formatJsonButton = createStyledButton("🔨", "Format output as JSON", ButtonStyleUtil.ButtonStyle.SUCCESS);
+        clearOutputButton = createStyledButton("×", "Clear output area", ButtonStyleUtil.ButtonStyle.DANGER);
         processTemplateButton.setToolTipText("Evaluate the template with data");
-
-        formatJsonButton = new JButton("🔨");
         formatJsonButton.setToolTipText("Format output as JSON");
-
-        clearOutputButton = new JButton("×");
         clearOutputButton.setToolTipText("Clear output area");
     }
 
@@ -67,13 +60,6 @@ public class OutputPanel extends EditorPanel {
         bottomPanel.add(formatJsonButton);
         bottomPanel.add(clearOutputButton);
         bottomPanel.add(toggleWrapButton);
-    }
-
-    public void toggleWrap() {
-        isWrapEnabled = !isWrapEnabled;
-        textArea.setLineWrap(isWrapEnabled);
-        textArea.setWrapStyleWord(isWrapEnabled);
-        toggleWrapButton.setText(isWrapEnabled ? "↵" : "→");
     }
 
     public static OutputPanel getInstance() {

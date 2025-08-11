@@ -17,6 +17,7 @@
 
 package co.com.leronarenwino.editor;
 
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import co.com.leronarenwino.utils.CaretUtil;
 import co.com.leronarenwino.utils.FindReplacePanel;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -61,7 +62,7 @@ public abstract class EditorPanel extends JPanel {
         centerPanel.add(scrollPane, BorderLayout.CENTER);
 
         // Initialize wrap button
-        toggleWrapButton = new JButton("→");
+        toggleWrapButton = createStyledButton("→", "Toggle line wrap", ButtonStyleUtil.ButtonStyle.SECONDARY);
         toggleWrapButton.setToolTipText("Toggle line wrap");
         toggleWrapButton.addActionListener(e -> toggleWrap());
 
@@ -99,6 +100,10 @@ public abstract class EditorPanel extends JPanel {
 
     public RSyntaxTextArea getTextArea() {
         return textArea;
+    }
+
+    protected JButton createStyledButton(String text, String tooltip, ButtonStyleUtil.ButtonStyle style) {
+        return ButtonStyleUtil.createStyledButton(text, tooltip, style);
     }
 
     private void addFindKeyBinding() {

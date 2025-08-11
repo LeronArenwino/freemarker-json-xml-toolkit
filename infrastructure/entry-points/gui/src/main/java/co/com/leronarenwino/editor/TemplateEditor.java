@@ -20,6 +20,7 @@ package co.com.leronarenwino.editor;
 import co.com.leronarenwino.FreemarkerProcessor;
 import co.com.leronarenwino.TemplateValidator;
 import co.com.leronarenwino.settings.Settings;
+import co.com.leronarenwino.utils.ButtonStyleUtil;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import utils.SettingsSingleton;
 
@@ -81,6 +82,9 @@ public class TemplateEditor extends JFrame {
     public TemplateEditor() {
         // Disable FlatLaf custom window decorations globally
         System.setProperty("flatlaf.useWindowDecorations", "false");
+
+        // Apply FlatLaf button styles
+        ButtonStyleUtil.applyFlatLafButtonStyles();
 
         // Set default properties from file or create new ones
         setSettingsFromProperties(
@@ -384,4 +388,10 @@ public class TemplateEditor extends JFrame {
         });
     }
 
+    /**
+     * Método público para reaplicar estilos cuando cambia el tema
+     */
+    public void reapplyButtonStyles() {
+        ButtonStyleUtil.applyFlatLafButtonStyles();
+    }
 }
