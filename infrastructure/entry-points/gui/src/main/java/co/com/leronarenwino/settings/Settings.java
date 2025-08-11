@@ -206,7 +206,7 @@ public class Settings extends JDialog {
     }
 
     private void saveSettings() {
-        Properties props = new Properties();
+        Properties props = loadProperties(PROPERTIES_FILE, defaultAppProperties());
         props.setProperty(SettingsSingleton.FREEMARKER_LOCALE, (String) localeCombo.getSelectedItem());
         props.setProperty(SettingsSingleton.FREEMARKER_TIME_ZONE, (String) timeZoneCombo.getSelectedItem());
         props.setProperty(SettingsSingleton.APP_THEME, (String) themeCombo.getSelectedItem());
@@ -214,8 +214,6 @@ public class Settings extends JDialog {
         String fileName = THEME_DISPLAY_TO_FILE.get(selectedDisplay);
         props.setProperty(SettingsSingleton.RSYNTAX_THEME, fileName);
         PropertiesManager.saveProperties(PROPERTIES_FILE, props);
-
-
     }
 
     private void loadSettings() {

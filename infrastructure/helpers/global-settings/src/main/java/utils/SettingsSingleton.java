@@ -43,6 +43,9 @@ public class SettingsSingleton {
 
     private static String rsyntaxTheme = DEFAULT_RSYNTAX_THEME;
 
+    public static final String EXPECTED_FIELDS_VISIBLE = "expected_fields_visible";
+    private static final boolean DEFAULT_EXPECTED_FIELDS_VISIBLE = true;
+    private static boolean expectedFieldsVisible = DEFAULT_EXPECTED_FIELDS_VISIBLE;
 
     public static Properties defaultAppProperties() {
         Properties properties = new Properties();
@@ -50,6 +53,7 @@ public class SettingsSingleton {
         properties.setProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
         properties.setProperty(APP_THEME, DEFAULT_THEME);
         properties.setProperty(RSYNTAX_THEME, DEFAULT_RSYNTAX_THEME);
+        properties.setProperty(EXPECTED_FIELDS_VISIBLE, String.valueOf(DEFAULT_EXPECTED_FIELDS_VISIBLE));
         return properties;
     }
 
@@ -78,6 +82,7 @@ public class SettingsSingleton {
         timeZone = properties.getProperty(FREEMARKER_TIME_ZONE, DEFAULT_TIME_ZONE);
         theme = properties.getProperty(APP_THEME, DEFAULT_THEME);
         rsyntaxTheme = properties.getProperty(RSYNTAX_THEME, DEFAULT_RSYNTAX_THEME);
+        expectedFieldsVisible = Boolean.parseBoolean(properties.getProperty(EXPECTED_FIELDS_VISIBLE, String.valueOf(DEFAULT_EXPECTED_FIELDS_VISIBLE)));
     }
 
     public static String getLocale() {
@@ -86,6 +91,14 @@ public class SettingsSingleton {
 
     public static String getTimeZone() {
         return timeZone;
+    }
+
+    public static boolean isExpectedFieldsVisible() {
+        return expectedFieldsVisible;
+    }
+
+    public static void setExpectedFieldsVisible(boolean visible) {
+        expectedFieldsVisible = visible;
     }
 
 }
